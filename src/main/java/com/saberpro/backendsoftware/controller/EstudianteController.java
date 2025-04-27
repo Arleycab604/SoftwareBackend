@@ -15,8 +15,9 @@ public class EstudianteController {
     }
 
     @GetMapping("/{documento}")
-    public Optional<Estudiante> getEstudiante(@PathVariable Long documento){
-        return repositorio.findById(documento);
+    public Optional<Estudiante> getEstudiante(@PathVariable Long documento) {
+        return repositorio.findById(documento) //Remover
+                .filter(u -> u instanceof Estudiante)
+                .map(u -> (Estudiante) u);
     }
-
 }

@@ -6,6 +6,9 @@ import com.saberpro.backendsoftware.model.*;
 import com.saberpro.backendsoftware.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +23,12 @@ public class QueryService {
     private final ProgramaRepositorio programaRepo;
     private final ModuloRepositorio moduloRepo;
 
-    public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO) {
+    public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO,Pageable pageable) {
         System.out.println("Iniciando filtrado con los datos: " + inputQueryDTO);
         List<ReporteDTO> resultados = new ArrayList<>();
 
         // Obtener todos los reportes
-        List<Reporte> reportes = reporteRepo.findAll();
+        Page<Reporte> reportes = reporteRepo.findAll(pageable);
 
         for (Reporte reporte : reportes) {
             // Filtrar por criterios globales

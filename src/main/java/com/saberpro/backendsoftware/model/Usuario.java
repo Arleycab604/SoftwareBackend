@@ -6,6 +6,7 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED) // Estrategia de herencia
 public class Usuario {
     @Id
     private String nombreUsuario;
@@ -16,17 +17,15 @@ public class Usuario {
     @Column(nullable = false)
     private String tipoDeUsuario;
 
-    @OneToOne(mappedBy = "nombreUsuario") // Relación bidireccional con Estudiante
-    private Estudiante estudiante;
+    private String correo;
 
     @ManyToOne
     @JoinColumn(name = "sniesId", referencedColumnName = "sniesId")
     private Programa programa;
 
-
     public void setSniesId(int sniesId) {
         if (this.programa != null) {
-            this.programa.setSniesId(sniesId); // solo actualizas el ID
+            this.programa.setSniesId(sniesId);
         } else {
             Programa p = new Programa();
             p.setSniesId(sniesId);

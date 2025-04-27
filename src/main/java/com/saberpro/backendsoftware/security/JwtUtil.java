@@ -6,7 +6,10 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+//poliridim
 @Component
 public class JwtUtil {
 
@@ -14,19 +17,25 @@ public class JwtUtil {
 
     public JwtUtil() {
         // Genera clave segura de al menos 256 bits
-        String secret = "clave_secreta_para_jwt_segura_y_larga_123456789";
+        String secret = "qt5I7leh5vFdRb4V+nbITMhsNqse/Z8JH5xwX8ZzkJ4=";
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String tipoDeUsuario) {
         long now = System.currentTimeMillis();
         // 2 horas
-        long EXPIRATION_TIME = 1000 * 60 * 60 * 2;
+        long EXPIRATION_TIME = 1000 * 60 * 60 * 2; //Milisegundos
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", username);
+        claims.put("tipoDeUsuario", tipoDeUsuario);
+        claims.put("iat", new Date(now)); //creacion token
+        claims.put("exp", new Date(now + EXPIRATION_TIME));
+
         return Jwts.builder()
-                .subject(username)
-                .issuedAt(new Date(now))
-                .expiration(new Date(now + EXPIRATION_TIME))
+                .addClaims(claims) // Usar addClaims para añadir los claims
                 .signWith(key)
                 .compact();
     }
+
 }

@@ -15,12 +15,16 @@ public class CsvUploadController {
     private final CsvUploadService csvUploadService;
 
     @PostMapping(value = "/csv", consumes = "multipart/form-data")
-    public ResponseEntity<String> uploadCsv(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadCsv(@RequestParam("files") MultipartFile[] files) {
+        StringBuilder responseMessage = new StringBuilder();
         try {
-            String message = csvUploadService.uploadExcel(file);
-            return ResponseEntity.ok(message);
+            for (MultipartFile file : files) {
+                String message = csvUploadService.uploadExcel(file);
+                responseMessage.append(message).append("\n");
+            }
+            return ResponseEntity.ok(responseMessage.toString());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al procesar el archivo: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al procesar los archivos: " + e.getMessage());
         }
     }
 }

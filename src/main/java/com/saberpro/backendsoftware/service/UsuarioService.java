@@ -30,18 +30,21 @@ public class UsuarioService {
         return true;
     }
 
+
     public String login(String nombreUsuario, String password) {
         System.out.println("Buscando usuario: " + nombreUsuario);
         Optional<Usuario> userOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
 
         if (userOpt.isPresent()) {
+            Usuario usuario = userOpt.get();
             System.out.println("Usuario encontrado. Verificando contraseña...");
-            boolean matches = passwordEncoder.matches(password, userOpt.get().getPassword());
+            boolean matches = passwordEncoder.matches(password, usuario.getPassword());
             System.out.println("¿Contraseña válida?: " + matches);
 
             if (matches) {
                 System.out.println("Login exitoso para usuario: " + nombreUsuario);
-                return jwtUtil.generateToken(nombreUsuario);
+
+                return jwtUtil.generateToken(nombreUsuario, usuario.getTipoDeUsuario());
             } else {
                 System.out.println("Contraseña incorrecta para usuario: " + nombreUsuario);
             }

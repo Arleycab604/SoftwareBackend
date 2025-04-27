@@ -25,6 +25,13 @@ public class UsuarioController {
         return response;
     }
 
+    /*
+    {
+     "nombreUsuario": "ABELLA BETANCOURT JORGE ANDRES",
+     "password": "f6bf8dae"
+
+    }
+    */
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Usuario usuario) {
         String token = usuarioService.login(usuario.getNombreUsuario(), usuario.getPassword());
