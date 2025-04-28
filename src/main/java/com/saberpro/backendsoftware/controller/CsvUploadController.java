@@ -19,6 +19,12 @@ public class CsvUploadController {
         StringBuilder responseMessage = new StringBuilder();
         try {
             for (MultipartFile file : files) {
+                // Validar el formato del nombre del archivo
+                String fileName = file.getOriginalFilename();
+                if (fileName == null || !fileName.matches("\\d{4}-\\d{1,2}\\.csv")) {
+                    return ResponseEntity.badRequest().body("El archivo " + fileName + " no cumple con el formato requerido (año-periodo.csv).");
+                }
+                // Validar las columnas específicas (puedes implementar esta lógica en el servicio)
                 String message = csvUploadService.uploadExcel(file);
                 responseMessage.append(message).append("\n");
             }

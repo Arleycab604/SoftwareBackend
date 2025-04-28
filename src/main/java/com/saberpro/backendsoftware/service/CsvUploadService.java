@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.Normalizer;
+import java.time.Year;
 import java.util.*;
 
 import com.saberpro.backendsoftware.model.*;
@@ -24,8 +25,30 @@ public class CsvUploadService {
     private final ReporteRepositorio reporteRepo;
     private final ModuloRepositorio moduloRepo;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final YearDataUploadService yearDataUploadService;
 
     public String uploadExcel(MultipartFile file) throws Exception {
+        // Obtener el nombre del archivo
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || fileName.isEmpty()) {
+            throw new IllegalArgumentException("El archivo no tiene un nombre válido.");
+        }
+
+        // Expresión regular para extraer el año y el periodo
+        String regex = "(\\d{4})[^\\d]*(\\d{1})$";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Matcher matcher = pattern.matcher(fileName);
+
+        int year;
+        int periodo;
+
+        if (matcher.find()) {
+            year = Integer.parseInt(matcher.group(1)); // Captura el año (cuatro dígitos)
+            periodo = Integer.parseInt(matcher.group(2)); // Captura el periodo (un dígito)
+        } else {
+            throw new IllegalArgumentException("El nombre del archivo no contiene un año y periodo válidos.");
+        }
+
         Reader reader = new InputStreamReader(file.getInputStream());
         CSVFormat format = CSVFormat.DEFAULT.builder()
                 .setHeader()
@@ -41,35 +64,25 @@ public class CsvUploadService {
             headerMap.put(normalize(rawHeader), rawHeader);
         }
 
-        String[] colCSV = {
-                "tipo de documento", "documento", "nombre", "numero de registro",
-                "tipo de evaluado", "snies programa academico", "programa", "ciudad",
-                "grupo de referencia", "puntaje global", "percentil nacional global",
-                "percentil grupo de referencia", "modulo", "puntaje modulo",
-                "nivel de desempeno", "percentil nacional modulo", "novedades",
-                "Percentil grupo de referencia modulo"
-        };
-
         FileWriter passwordWriter = new FileWriter("passwords.txt", true);
 
         for (CSVRecord record : parser) {
-            String tipoDocumento = record.get(headerMap.get(colCSV[0])).trim();
-            String documento = record.get(headerMap.get(colCSV[1])).trim();
-            String nombre = record.get(headerMap.get(colCSV[2])).trim();
-            String numeroRegistro = record.get(headerMap.get(colCSV[3])).trim();
-            String tipoEvaluado = record.get(headerMap.get(colCSV[4])).trim();
-            int sniesId = Integer.parseInt( record.get(headerMap.get(colCSV[5])).trim());
-            String nombrePrograma = record.get(headerMap.get(colCSV[6])).trim();
-            String ciudad = record.get(headerMap.get(colCSV[7])).trim();
-            String grupoReferencia = record.get(headerMap.get(colCSV[8])).trim();
-            int puntajeGlobal = Integer.parseInt(record.get(headerMap.get(colCSV[9])).trim());
-            int percentilNacionalGlobal= Integer.parseInt(record.get(headerMap.get(colCSV[10])).trim());
-            //int percentilGrupoReferencia = Integer.parseInt(record.get(headerMap.get(colCSV[11])).trim());
-            String tipoModulo = record.get(headerMap.get(colCSV[12])).trim();
-            int puntajeModulo = Integer.parseInt(record.get(headerMap.get(colCSV[13])).trim());
-            String nivelDesempeno = record.get(headerMap.get(colCSV[14])).trim();
-            int percentilNacionalModulo = Integer.parseInt(record.get(headerMap.get(colCSV[15])).trim());
-            String novedades = record.get(headerMap.get(colCSV[16])).trim();
+            String tipoDocumento = record.get(headerMap.get("tipo de documento")).trim();
+            String documento = record.get(headerMap.get("documento")).trim();
+            String nombre = record.get(headerMap.get("nombre")).trim();
+            String numeroRegistro = record.get(headerMap.get("numero de registro")).trim();
+            String tipoEvaluado = record.get(headerMap.get("tipo de evaluado")).trim();
+            int sniesId = Integer.parseInt(record.get(headerMap.get("snies programa academico")).trim());
+            String nombrePrograma = record.get(headerMap.get("programa")).trim();
+            String ciudad = record.get(headerMap.get("ciudad")).trim();
+            String grupoReferencia = record.get(headerMap.get("grupo de referencia")).trim();
+            int puntajeGlobal = Integer.parseInt(record.get(headerMap.get("puntaje global")).trim());
+            int percentilNacionalGlobal = Integer.parseInt(record.get(headerMap.get("percentil nacional global")).trim());
+            String tipoModulo = record.get(headerMap.get("modulo")).trim();
+            int puntajeModulo = Integer.parseInt(record.get(headerMap.get("puntaje modulo")).trim());
+            String nivelDesempeno = record.get(headerMap.get("nivel de desempeno")).trim();
+            int percentilNacionalModulo = Integer.parseInt(record.get(headerMap.get("percentil nacional modulo")).trim());
+            String novedades = record.get(headerMap.get("novedades")).trim();
 
             // --- Programa ---
             Programa programa = programaRepo.findById(sniesId).orElse(null);
@@ -115,8 +128,8 @@ public class CsvUploadService {
                 reporte = new Reporte();
                 reporte.setNumero_Registro(numeroRegistro);
                 reporte.setDocumento(estudiante);
-                reporte.setYear(2023); // o puedes extraerlo del CSV si lo tienes
-                reporte.setPeriodo(2);
+                reporte.setYear(year); // Usar el año extraído
+                reporte.setPeriodo(periodo); // Usar el periodo extraído
                 reporte.setPuntajeGlobal(puntajeGlobal);
                 reporte.setPercentilGlobal(percentilNacionalGlobal);
                 reporte.setNovedades(novedades);
@@ -144,10 +157,11 @@ public class CsvUploadService {
 
         passwordWriter.close();
 
-        //Parte para crear reporteyear y moduloyear
+        // Llamar a YearDataUploadService con el año y periodo extraídos
+        yearDataUploadService.processYearData(year, periodo);
+
         return "Archivo procesado exitosamente";
     }
-
     private String generateRandomPassword() {
         return UUID.randomUUID().toString().substring(0, 8);
     }
