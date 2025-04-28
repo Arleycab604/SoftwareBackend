@@ -27,15 +27,17 @@ public class CsvUploadService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final YearDataUploadService yearDataUploadService;
 
-    public String uploadExcel(MultipartFile file) throws Exception {
-        // Obtener el nombre del archivo
+    public String uploadCsv(MultipartFile file) throws Exception {
         String fileName = file.getOriginalFilename();
         if (fileName == null || fileName.isEmpty()) {
             throw new IllegalArgumentException("El archivo no tiene un nombre válido.");
         }
 
-        // Expresión regular para extraer el año y el periodo
-        String regex = "(\\d{4})[^\\d]*(\\d{1})$";
+        if (!fileName.toLowerCase().endsWith(".csv")) {
+            throw new IllegalArgumentException("El archivo debe ser un archivo CSV.");
+        }
+
+        String regex = "(\\d{4})[^\\d]*(\\d{1})(\\.csv)?$";
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
         java.util.regex.Matcher matcher = pattern.matcher(fileName);
 
@@ -43,8 +45,8 @@ public class CsvUploadService {
         int periodo;
 
         if (matcher.find()) {
-            year = Integer.parseInt(matcher.group(1)); // Captura el año (cuatro dígitos)
-            periodo = Integer.parseInt(matcher.group(2)); // Captura el periodo (un dígito)
+            year = Integer.parseInt(matcher.group(1));
+            periodo = Integer.parseInt(matcher.group(2));
         } else {
             throw new IllegalArgumentException("El nombre del archivo no contiene un año y periodo válidos.");
         }
@@ -58,7 +60,6 @@ public class CsvUploadService {
                 .build();
 
         CSVParser parser = format.parse(reader);
-
         Map<String, String> headerMap = new HashMap<>();
         for (String rawHeader : parser.getHeaderMap().keySet()) {
             headerMap.put(normalize(rawHeader), rawHeader);
@@ -84,7 +85,6 @@ public class CsvUploadService {
             int percentilNacionalModulo = Integer.parseInt(record.get(headerMap.get("percentil nacional modulo")).trim());
             String novedades = record.get(headerMap.get("novedades")).trim();
 
-            // --- Programa ---
             Programa programa = programaRepo.findById(sniesId).orElse(null);
             if (programa == null) {
                 programa = new Programa();
@@ -94,7 +94,6 @@ public class CsvUploadService {
                 programaRepo.save(programa);
             }
 
-            // --- Usuario ---
             Usuario usuario = usuarioRepo.findById(nombre).orElse(null);
             if (usuario == null) {
                 String rawPassword = generateRandomPassword();
@@ -109,7 +108,6 @@ public class CsvUploadService {
                 passwordWriter.write(nombre + ": " + rawPassword + "\n");
             }
 
-            // --- Estudiante ---
             Long doc = Long.parseLong(documento);
             Estudiante estudiante = estudianteRepo.findById(doc).orElse(null);
             if (estudiante == null) {
@@ -122,14 +120,13 @@ public class CsvUploadService {
                 estudianteRepo.save(estudiante);
             }
 
-            // --- Reporte ---
             Reporte reporte = reporteRepo.findById(numeroRegistro).orElse(null);
             if (reporte == null) {
                 reporte = new Reporte();
-                reporte.setNumero_Registro(numeroRegistro);
+                reporte.setNumeroRegistro(numeroRegistro);
                 reporte.setDocumento(estudiante);
-                reporte.setYear(year); // Usar el año extraído
-                reporte.setPeriodo(periodo); // Usar el periodo extraído
+                reporte.setYear(year);
+                reporte.setPeriodo(periodo);
                 reporte.setPuntajeGlobal(puntajeGlobal);
                 reporte.setPercentilGlobal(percentilNacionalGlobal);
                 reporte.setNovedades(novedades);
@@ -137,7 +134,6 @@ public class CsvUploadService {
                 reporteRepo.save(reporte);
             }
 
-            // --- Módulo ---
             Modulo modulo = moduloRepo.findByTipoAndNumeroRegistro(tipoModulo, numeroRegistro).orElse(null);
             if (modulo == null) {
                 modulo = new Modulo();
@@ -146,22 +142,20 @@ public class CsvUploadService {
                 modulo.setPuntajeModulo(puntajeModulo);
                 modulo.setNivelDesempeno(nivelDesempeno);
                 modulo.setPercentilNacional(percentilNacionalModulo);
-                modulo.setCodModulo(reporte);
+                modulo.setReporte(reporte);
                 moduloRepo.save(modulo);
 
-                // Añadir a la lista en el reporte
                 reporte.getModulos().add(modulo);
-                reporteRepo.save(reporte); // importante para mantener la relación bidireccional
+                reporteRepo.save(reporte);
             }
         }
 
         passwordWriter.close();
-
-        // Llamar a YearDataUploadService con el año y periodo extraídos
         yearDataUploadService.processYearData(year, periodo);
 
         return "Archivo procesado exitosamente";
     }
+
     private String generateRandomPassword() {
         return UUID.randomUUID().toString().substring(0, 8);
     }

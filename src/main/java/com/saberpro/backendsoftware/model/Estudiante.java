@@ -14,7 +14,7 @@ public class Estudiante {
     private String tipoDocumento;
 
     @OneToOne
-    @JoinColumn(name = "nombreUsuario")  // Establece la clave foránea en la tabla Estudiante
+    @JoinColumn(name = "nombreUsuario", referencedColumnName = "nombreUsuario")
     private Usuario nombreUsuario;
 
     private String tipoDeEvaluado;

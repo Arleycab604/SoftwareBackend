@@ -40,7 +40,7 @@ public class QueryService {
                             (inputQueryDTO.getNombrePrograma() == null || inputQueryDTO.getNombrePrograma().isEmpty() ||
                                     reporte.getDocumento().getNombreUsuario().getPrograma().getPrograma().equalsIgnoreCase(inputQueryDTO.getNombrePrograma())) &&
                             (inputQueryDTO.getNumeroRegistro() == null || inputQueryDTO.getNumeroRegistro().isEmpty() ||
-                                    reporte.getNumero_Registro().equalsIgnoreCase(inputQueryDTO.getNumeroRegistro())) &&
+                                    reporte.getNumeroRegistro().equalsIgnoreCase(inputQueryDTO.getNumeroRegistro())) &&
                             (inputQueryDTO.getPuntajeGlobalMinimo() == 0 || reporte.getPuntajeGlobal() >= inputQueryDTO.getPuntajeGlobalMinimo()) &&
                             (inputQueryDTO.getPuntajeGlobalMaximo() == 0 || reporte.getPuntajeGlobal() <= inputQueryDTO.getPuntajeGlobalMaximo());
 
@@ -70,7 +70,7 @@ public class QueryService {
     }
 
     private ReporteDTO convertToReporteDTO(Reporte reporte, Modulo modulo) {
-        System.out.println("Convirtiendo reporte: " + reporte.getNumero_Registro() + " con módulo: " + modulo.getTipo());
+        System.out.println("Convirtiendo reporte: " + reporte.getNumeroRegistro() + " con módulo: " + modulo.getTipo());
         return new ReporteDTO(
                 reporte.getDocumento().getDocumento(),
                 reporte.getDocumento().getTipoDocumento(),
@@ -81,7 +81,7 @@ public class QueryService {
                 reporte.getDocumento().getNombreUsuario().getPrograma().getSniesId(),
                 reporte.getDocumento().getNombreUsuario().getPrograma().getPrograma(),
                 reporte.getDocumento().getNombreUsuario().getPrograma().getGrupoDeReferencia(),
-                reporte.getNumero_Registro(),
+                reporte.getNumeroRegistro(),
                 reporte.getYear(),
                 reporte.getPeriodo(),
                 reporte.getPuntajeGlobal(),
