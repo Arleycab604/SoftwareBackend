@@ -1,6 +1,5 @@
 package com.saberpro.backendsoftware.repository;
 
-import com.saberpro.backendsoftware.model.Modulo;
 import com.saberpro.backendsoftware.model.Reporte;
 import org.springframework.data.jpa.repository.JpaRepository;
 

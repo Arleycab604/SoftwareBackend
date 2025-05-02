@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +24,27 @@ public class QueryService {
     private final ProgramaRepositorio programaRepo;
     private final ModuloRepositorio moduloRepo;
 
-    public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO,Pageable pageable) {
-        System.out.println("Iniciando filtrado con los datos: " + inputQueryDTO);
+
+    public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO, Pageable pageable) {
+        try {
+            System.out.println(inputQueryDTO);
+            // Imprimir el contenido del InputQueryDTO en formato JSON para depuración
+            ObjectMapper objectMapper = new ObjectMapper();
+            String inputQueryJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputQueryDTO);
+            System.out.println("Datos del InputQueryDTO:\n" + inputQueryJson);
+        } catch (Exception e) {
+            System.err.println("Error al imprimir InputQueryDTO: " + e.getMessage());
+        }
+
         List<ReporteDTO> resultados = new ArrayList<>();
 
         // Obtener todos los reportes
         Page<Reporte> reportes = reporteRepo.findAll(pageable);
+
+        // Dividir el campo tipoModulo en una lista si contiene valores separados por comas
+        List<String> tiposModulo = inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()
+                ? List.of(inputQueryDTO.getTipoModulo().split(","))
+                : new ArrayList<>();
 
         for (Reporte reporte : reportes) {
             // Filtrar por criterios globales
@@ -49,8 +65,7 @@ public class QueryService {
                 for (Modulo modulo : reporte.getModulos()) {
                     // Filtrar por criterios específicos de módulos
                     boolean cumpleFiltrosModulo =
-                            (inputQueryDTO.getTipoModulo() == null || inputQueryDTO.getTipoModulo().isEmpty() ||
-                                    modulo.getTipo().equalsIgnoreCase(inputQueryDTO.getTipoModulo())) &&
+                            (tiposModulo.isEmpty() || tiposModulo.contains(modulo.getTipo())) &&
                                     (inputQueryDTO.getNivelDesempeno() == null || inputQueryDTO.getNivelDesempeno().isEmpty() ||
                                             modulo.getNivelDesempeno().equalsIgnoreCase(inputQueryDTO.getNivelDesempeno())) &&
                                     (inputQueryDTO.getPuntajeMinimoModulo() == 0 || modulo.getPuntajeModulo() >= inputQueryDTO.getPuntajeMinimoModulo()) &&
@@ -70,7 +85,7 @@ public class QueryService {
     }
 
     private ReporteDTO convertToReporteDTO(Reporte reporte, Modulo modulo) {
-        System.out.println("Convirtiendo reporte: " + reporte.getNumero_Registro() + " con módulo: " + modulo.getTipo());
+        //System.out.println("Convirtiendo reporte: " + reporte.getNumero_Registro() + " con módulo: " + modulo.getTipo());
         return new ReporteDTO(
                 reporte.getDocumento().getDocumento(),
                 reporte.getDocumento().getTipoDocumento(),

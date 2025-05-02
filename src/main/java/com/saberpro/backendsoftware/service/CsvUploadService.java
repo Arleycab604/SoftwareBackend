@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.Normalizer;
-import java.time.Year;
 import java.util.*;
 
 import com.saberpro.backendsoftware.model.*;
@@ -27,26 +26,11 @@ public class CsvUploadService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final YearDataUploadService yearDataUploadService;
 
-    public String uploadExcel(MultipartFile file) throws Exception {
+    public String uploadExcel(MultipartFile file,int year, int periodo) throws Exception {
         // Obtener el nombre del archivo
         String fileName = file.getOriginalFilename();
         if (fileName == null || fileName.isEmpty()) {
             throw new IllegalArgumentException("El archivo no tiene un nombre válido.");
-        }
-
-        // Expresión regular para extraer el año y el periodo
-        String regex = "(\\d{4})[^\\d]*(\\d{1})$";
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
-        java.util.regex.Matcher matcher = pattern.matcher(fileName);
-
-        int year;
-        int periodo;
-
-        if (matcher.find()) {
-            year = Integer.parseInt(matcher.group(1)); // Captura el año (cuatro dígitos)
-            periodo = Integer.parseInt(matcher.group(2)); // Captura el periodo (un dígito)
-        } else {
-            throw new IllegalArgumentException("El nombre del archivo no contiene un año y periodo válidos.");
         }
 
         Reader reader = new InputStreamReader(file.getInputStream());

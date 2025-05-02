@@ -1,12 +1,15 @@
 package com.saberpro.backendsoftware.service;
 
+import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
 import com.saberpro.backendsoftware.security.JwtUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -30,28 +33,46 @@ public class UsuarioService {
         return true;
     }
 
-
     public String login(String nombreUsuario, String password) {
-        System.out.println("Buscando usuario: " + nombreUsuario);
         Optional<Usuario> userOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
 
         if (userOpt.isPresent()) {
             Usuario usuario = userOpt.get();
-            System.out.println("Usuario encontrado. Verificando contraseña...");
-            boolean matches = passwordEncoder.matches(password, usuario.getPassword());
-            System.out.println("¿Contraseña válida?: " + matches);
-
-            if (matches) {
-                System.out.println("Login exitoso para usuario: " + nombreUsuario);
-
+            if (passwordEncoder.matches(password, usuario.getPassword())) {
                 return jwtUtil.generateToken(nombreUsuario, usuario.getTipoDeUsuario());
-            } else {
-                System.out.println("Contraseña incorrecta para usuario: " + nombreUsuario);
             }
-        } else {
-            System.out.println("Usuario no encontrado: " + nombreUsuario);
         }
-
         return null;
+    }
+    public boolean cambiarRolUsuario(String nombreUsuario, String nuevoRol) {
+        return usuarioRepositorio.findByNombreUsuario(nombreUsuario)
+                .map(usuario -> {
+                    usuario.setTipoDeUsuario(nuevoRol);
+                    usuarioRepositorio.save(usuario);
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    public List<UsuarioDTO> buscarUsuariosExcluyendoTipo(String tipoExcluido) {
+        return usuarioRepositorio.findByTipoDeUsuarioNot(tipoExcluido)
+                .stream()
+                .map(this::convertirAUsuarioDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioDTO> buscarPorTipoUsuario(String tipoUsuario) {
+        return usuarioRepositorio.findByTipoDeUsuario(tipoUsuario)
+                .stream()
+                .map(this::convertirAUsuarioDTO)
+                .collect(Collectors.toList());
+    }
+
+    private UsuarioDTO convertirAUsuarioDTO(Usuario usuario) {
+        return new UsuarioDTO(
+                usuario.getNombreUsuario(),
+                usuario.getTipoDeUsuario(),
+                usuario.getCorreo()
+        );
     }
 }

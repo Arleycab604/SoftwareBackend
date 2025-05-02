@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,7 @@ public class Usuario {
 
     @ManyToOne
     @JoinColumn(name = "sniesId", referencedColumnName = "sniesId")
+    @JsonBackReference
     private Programa programa;
 
     public void setSniesId(int sniesId) {

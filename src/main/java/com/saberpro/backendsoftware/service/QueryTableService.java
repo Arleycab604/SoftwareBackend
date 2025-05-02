@@ -3,7 +3,6 @@ package com.saberpro.backendsoftware.service;
 import com.saberpro.backendsoftware.Dtos.InputQueryDTO;
 import com.saberpro.backendsoftware.Dtos.ReporteDTO;
 import com.saberpro.backendsoftware.model.*;
-import com.saberpro.backendsoftware.repository.ReporteRepositorio;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
