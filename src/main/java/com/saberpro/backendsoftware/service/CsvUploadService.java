@@ -51,46 +51,33 @@ public class CsvUploadService {
         FileWriter passwordWriter = new FileWriter("passwords.txt", true);
 
         for (CSVRecord record : parser) {
-            String tipoDocumento = record.get(headerMap.get("tipo de documento")).trim();
-            String documento = record.get(headerMap.get("documento")).trim();
-            String nombre = record.get(headerMap.get("nombre")).trim();
-            String numeroRegistro = record.get(headerMap.get("numero de registro")).trim();
-            String tipoEvaluado = record.get(headerMap.get("tipo de evaluado")).trim();
-            int sniesId = Integer.parseInt(record.get(headerMap.get("snies programa academico")).trim());
-            String nombrePrograma = record.get(headerMap.get("programa")).trim();
-            String ciudad = record.get(headerMap.get("ciudad")).trim();
-            String grupoReferencia = record.get(headerMap.get("grupo de referencia")).trim();
-            int puntajeGlobal = Integer.parseInt(record.get(headerMap.get("puntaje global")).trim());
-            int percentilNacionalGlobal = Integer.parseInt(record.get(headerMap.get("percentil nacional global")).trim());
-            String tipoModulo = record.get(headerMap.get("modulo")).trim();
-            int puntajeModulo = Integer.parseInt(record.get(headerMap.get("puntaje modulo")).trim());
-            String nivelDesempeno = record.get(headerMap.get("nivel de desempeno")).trim();
-            int percentilNacionalModulo = Integer.parseInt(record.get(headerMap.get("percentil nacional modulo")).trim());
-            String novedades = record.get(headerMap.get("novedades")).trim();
+            String tipoDocumento = record.get(headerMap.get("tipo de documento")).trim(),
+                    documento = record.get(headerMap.get("documento")).trim(),
+                    nombre = record.get(headerMap.get("nombre")).trim(),
+                    numeroRegistro = record.get(headerMap.get("numero de registro")).trim(),
+                    tipoEvaluado = record.get(headerMap.get("tipo de evaluado")).trim(),
+                    nombrePrograma = record.get(headerMap.get("programa")).trim(),
+                    ciudad = record.get(headerMap.get("ciudad")).trim(),
+                    grupoReferencia = record.get(headerMap.get("grupo de referencia")).trim(),
+                    tipoModulo = record.get(headerMap.get("modulo")).trim(),
+                    nivelDesempeno = record.get(headerMap.get("nivel de desempeno")).trim(),
+                    novedades = record.get(headerMap.get("novedades")).trim();
+
+            int sniesId = Integer.parseInt(record.get(headerMap.get("snies programa academico")).trim()),
+                    puntajeGlobal = Integer.parseInt(record.get(headerMap.get("puntaje global")).trim()),
+                    percentilNacionalGlobal = Integer.parseInt(record.get(headerMap.get("percentil nacional global")).trim()),
+                    puntajeModulo = Integer.parseInt(record.get(headerMap.get("puntaje modulo")).trim()),
+                    percentilNacionalModulo = Integer.parseInt(record.get(headerMap.get("percentil nacional modulo")).trim());
+
 
             // --- Programa ---
             Programa programa = programaRepo.findById(sniesId).orElse(null);
             if (programa == null) {
                 programa = new Programa();
                 programa.setSniesId(sniesId);
-                programa.setPrograma(nombrePrograma);
+                programa.setNombrePrograma(nombrePrograma);
                 programa.setGrupoDeReferencia(grupoReferencia);
                 programaRepo.save(programa);
-            }
-
-            // --- Usuario ---
-            Usuario usuario = usuarioRepo.findById(nombre).orElse(null);
-            if (usuario == null) {
-                String rawPassword = generateRandomPassword();
-                String hashed = passwordEncoder.encode(rawPassword);
-                usuario = new Usuario();
-                usuario.setNombreUsuario(nombre);
-                usuario.setPassword(hashed);
-                usuario.setSniesId(sniesId);
-                usuario.setTipoDeUsuario("estudiante");
-                usuario.setPrograma(programa);
-                usuarioRepo.save(usuario);
-                passwordWriter.write(nombre + ": " + rawPassword + "\n");
             }
 
             // --- Estudiante ---
@@ -100,7 +87,7 @@ public class CsvUploadService {
                 estudiante = new Estudiante();
                 estudiante.setDocumento(doc);
                 estudiante.setTipoDocumento(tipoDocumento);
-                estudiante.setNombreUsuario(usuario);
+                estudiante.setNombreEstudiante(nombre);
                 estudiante.setTipoDeEvaluado(tipoEvaluado);
                 estudiante.setCiudad(ciudad);
                 estudianteRepo.save(estudiante);
@@ -110,8 +97,8 @@ public class CsvUploadService {
             Reporte reporte = reporteRepo.findById(numeroRegistro).orElse(null);
             if (reporte == null) {
                 reporte = new Reporte();
-                reporte.setNumero_Registro(numeroRegistro);
-                reporte.setDocumento(estudiante);
+                reporte.setNumeroRegistro(numeroRegistro);
+                reporte.setEstudiante(estudiante);
                 reporte.setYear(year); // Usar el año extraído
                 reporte.setPeriodo(periodo); // Usar el periodo extraído
                 reporte.setPuntajeGlobal(puntajeGlobal);
@@ -126,11 +113,11 @@ public class CsvUploadService {
             if (modulo == null) {
                 modulo = new Modulo();
                 modulo.setTipo(tipoModulo);
-                modulo.setNumeroRegistro(numeroRegistro);
+                modulo.setReporte(reporte);
                 modulo.setPuntajeModulo(puntajeModulo);
                 modulo.setNivelDesempeno(nivelDesempeno);
                 modulo.setPercentilNacional(percentilNacionalModulo);
-                modulo.setCodModulo(reporte);
+                modulo.setReporte(reporte);
                 moduloRepo.save(modulo);
 
                 // Añadir a la lista en el reporte

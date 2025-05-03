@@ -1,9 +1,7 @@
 package com.saberpro.backendsoftware.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,11 +15,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Programa {
     @Id
     private int sniesId;
-    private String programa;
+    private String nombrePrograma;
     private String grupoDeReferencia;
 
     @JsonIgnore
     @JsonManagedReference
+    @ManyToMany
+    @JoinTable(
+            name = "usuario_programa",
+            joinColumns = @JoinColumn(name = "sniesId"),
+            inverseJoinColumns = @JoinColumn(name = "nombreUsuario")
+    )
+    private List<Usuario> usuarios = new ArrayList<>();
+
+    @JsonIgnore
+    @JsonManagedReference
     @OneToMany(mappedBy = "programa")
-    private List<Usuario> usuarios = new ArrayList<Usuario>();
+    private List<Estudiante>  estudiantes= new ArrayList<Estudiante>();
+
 }

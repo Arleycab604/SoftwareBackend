@@ -13,12 +13,11 @@ public class Modulo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idModulo;
     private String tipo;
-    private String numeroRegistro;
     private int puntajeModulo;
     private String nivelDesempeno;
     private int percentilNacional;
 
     @ManyToOne
-    @JoinColumn(name = "codModulo")
-    private Reporte codModulo;
+    @JoinColumn(name = "numeroRegistro", referencedColumnName = "numeroRegistro")
+    private Reporte reporte;
 }

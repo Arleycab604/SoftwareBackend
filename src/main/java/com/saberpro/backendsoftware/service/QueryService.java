@@ -52,11 +52,11 @@ public class QueryService {
                     (inputQueryDTO.getYear() == 0 || reporte.getYear() == inputQueryDTO.getYear()) &&
                             (inputQueryDTO.getPeriodo() == 0 || reporte.getPeriodo() == inputQueryDTO.getPeriodo()) &&
                             (inputQueryDTO.getNombreUsuario() == null || inputQueryDTO.getNombreUsuario().isEmpty() ||
-                                    reporte.getDocumento().getNombreUsuario().getNombreUsuario().equalsIgnoreCase(inputQueryDTO.getNombreUsuario())) &&
+                                    reporte.getEstudiante().getNombreEstudiante().equalsIgnoreCase(inputQueryDTO.getNombreUsuario())) &&
                             (inputQueryDTO.getNombrePrograma() == null || inputQueryDTO.getNombrePrograma().isEmpty() ||
-                                    reporte.getDocumento().getNombreUsuario().getPrograma().getPrograma().equalsIgnoreCase(inputQueryDTO.getNombrePrograma())) &&
+                                    reporte.getEstudiante().getPrograma().getNombrePrograma().equalsIgnoreCase(inputQueryDTO.getNombrePrograma())) &&
                             (inputQueryDTO.getNumeroRegistro() == null || inputQueryDTO.getNumeroRegistro().isEmpty() ||
-                                    reporte.getNumero_Registro().equalsIgnoreCase(inputQueryDTO.getNumeroRegistro())) &&
+                                    reporte.getNumeroRegistro().equalsIgnoreCase(inputQueryDTO.getNumeroRegistro())) &&
                             (inputQueryDTO.getPuntajeGlobalMinimo() == 0 || reporte.getPuntajeGlobal() >= inputQueryDTO.getPuntajeGlobalMinimo()) &&
                             (inputQueryDTO.getPuntajeGlobalMaximo() == 0 || reporte.getPuntajeGlobal() <= inputQueryDTO.getPuntajeGlobalMaximo());
 
@@ -87,25 +87,24 @@ public class QueryService {
     private ReporteDTO convertToReporteDTO(Reporte reporte, Modulo modulo) {
         //System.out.println("Convirtiendo reporte: " + reporte.getNumero_Registro() + " con módulo: " + modulo.getTipo());
         return new ReporteDTO(
-                reporte.getDocumento().getDocumento(),
-                reporte.getDocumento().getTipoDocumento(),
-                reporte.getDocumento().getCiudad(),
-                reporte.getDocumento().getTipoDeEvaluado(),
-                reporte.getDocumento().getNombreUsuario().getNombreUsuario(),
-                reporte.getDocumento().getNombreUsuario().getTipoDeUsuario(),
-                reporte.getDocumento().getNombreUsuario().getPrograma().getSniesId(),
-                reporte.getDocumento().getNombreUsuario().getPrograma().getPrograma(),
-                reporte.getDocumento().getNombreUsuario().getPrograma().getGrupoDeReferencia(),
-                reporte.getNumero_Registro(),
-                reporte.getYear(),
-                reporte.getPeriodo(),
+                reporte.getEstudiante().getDocumento(),                          //Documento
+                reporte.getEstudiante().getTipoDocumento(),                      // Tipo Documento
+                reporte.getEstudiante().getCiudad(),                             // Ciudad
+                reporte.getEstudiante().getTipoDeEvaluado(),                     // Tipo de evaluado
+                reporte.getEstudiante().getNombreEstudiante(),                   // Nombre estudiante
+                reporte.getEstudiante().getPrograma().getSniesId(),              // SniesId
+                reporte.getEstudiante().getPrograma().getNombrePrograma(),       // Nombre programa
+                reporte.getEstudiante().getPrograma().getGrupoDeReferencia(),    // Grupo de referencia
+                reporte.getNumeroRegistro(),                                     // Número de registro
+                reporte.getYear(),                                               // Año
+                reporte.getPeriodo(),                                            // Periodo
                 reporte.getPuntajeGlobal(),
                 reporte.getPercentilGlobal(),
                 reporte.getNovedades(),
-                modulo.getTipo(), // Tipo de módulo
-                modulo.getPuntajeModulo(), // Puntaje del módulo
-                modulo.getNivelDesempeno(), // Nivel de desempeño
-                modulo.getPercentilNacional() // Percentil nacional del módulo
+                modulo.getTipo(),                                                // Tipo de módulo
+                modulo.getPuntajeModulo(),                                       // Puntaje del módulo
+                modulo.getNivelDesempeno(),                                      // Nivel de desempeño
+                modulo.getPercentilNacional()                                    // Percentil nacional del módulo
         );
     }
 }

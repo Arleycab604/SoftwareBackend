@@ -5,13 +5,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-//Maneja un solo reporte con un solo modulo con su puntaje general
+//Maneja un solo reporte con un módulo con su puntaje general
 //Igual a como sale en el excel
 @Getter
 @Setter
 
 @RequiredArgsConstructor
-// by Puntaje minimo, maximo, y por puntaje,
+// by Puntaje minimo, maxim, y por puntaje,
 // By year periodo, year, periodo
 public class InputQueryDTO {
     private int year;

@@ -12,24 +12,24 @@ import java.util.List;
 @Entity
 public class Reporte {
     @Id
-    private String numero_Registro;
+    private String numeroRegistro;
 
     @ManyToOne
-    @JoinColumn(name = "nombreUsuario", referencedColumnName = "nombreUsuario")
-    private Estudiante documento;
+    @JoinColumn(name = "nombreEstudiante", referencedColumnName = "nombreEstudiante")
+    private Estudiante estudiante;
 
     private int year;
     private int periodo;
     private int puntajeGlobal;
     private int percentilGlobal;
 
-    @OneToMany(mappedBy = "codModulo")
+    @OneToMany(mappedBy = "reporte")
     private List<Modulo> modulos;
 
     private String novedades;
 
     public Reporte() {
-        numero_Registro = "";
+        numeroRegistro = "";
         year = 0;
         periodo = 0;
         modulos = new ArrayList<>(7);

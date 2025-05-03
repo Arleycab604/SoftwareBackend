@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -20,18 +23,33 @@ public class Usuario {
 
     private String correo;
 
-    @ManyToOne
-    @JoinColumn(name = "sniesId", referencedColumnName = "sniesId")
-    @JsonBackReference
-    private Programa programa;
+    @ManyToMany
+    @JoinTable(
+            name = "usuario_programa",
+            joinColumns = @JoinColumn(name = "nombreUsuario"),
+            inverseJoinColumns = @JoinColumn(name = "sniesId")
+    )
+    private List<Programa> programas;
 
-    public void setSniesId(int sniesId) {
-        if (this.programa != null) {
-            this.programa.setSniesId(sniesId);
+    public Usuario() {
+        nombreUsuario = "";
+        password = "";
+        tipoDeUsuario = "";
+        correo = "";
+        programas = new ArrayList<>();
+    }
+    public Usuario(String nombreUsuario, String password, String tipoDeUsuario, String correo, List<Programa> programas) {
+        this.nombreUsuario = nombreUsuario;
+        this.password = password;
+        this.tipoDeUsuario = tipoDeUsuario;
+        this.correo = correo;
+        this.programas = programas;
+    }
+    public void AddPrograma(Programa programa) {
+        if (programas != null) {
+            programas.add(programa);
         } else {
-            Programa p = new Programa();
-            p.setSniesId(sniesId);
-            this.programa = p;
+            throw new IllegalStateException("La lista de programas no está inicializada.");
         }
     }
 }

@@ -19,6 +19,6 @@ public class ReporteYear {
     private double varianzaPeriodo;
     private double coeficienteVariacion;
 
-    @OneToMany
+    @OneToMany(mappedBy = "idModuloYear")
     private List<ModuloYear> modulosYear;
 }

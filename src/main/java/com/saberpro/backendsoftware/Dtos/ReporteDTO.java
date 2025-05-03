@@ -11,7 +11,6 @@ public class ReporteDTO {
     private String tipoDeEvaluado;
     // Datos del usuario
     private String nombreUsuario;
-    private String tipoDeUsuario;
     // Datos del programa
     private int sniesId;
     private String nombrePrograma;
@@ -36,7 +35,7 @@ public class ReporteDTO {
     }
     public ReporteDTO(Long documento,String tipoDocumento,
     String ciudad, String tipoDeEvaluado, String nombreUsuario,
-    String tipoDeUsuario, int sniesId,String nombrePrograma,String grupoDeReferencia,
+    int sniesId,String nombrePrograma,String grupoDeReferencia,
     String numeroRegistro,int year,int periodo,int puntajeGlobal,int percentilGlobal,
     String novedades,String tipoModulo,int puntajeModulo,String nivelDesempeno,int percentilModulo) {
         this.documento = documento;
@@ -44,7 +43,6 @@ public class ReporteDTO {
         this.ciudad = ciudad;
         this.tipoDeEvaluado = tipoDeEvaluado;
         this.nombreUsuario = nombreUsuario;
-        this.tipoDeUsuario = tipoDeUsuario;
         this.sniesId = sniesId;
         this.nombrePrograma = nombrePrograma;
         this.grupoDeReferencia = grupoDeReferencia;

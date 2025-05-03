@@ -14,14 +14,14 @@ public interface ModuloRepositorio extends JpaRepository<Modulo, Long> {
     // Buscar por tipo
     List<Modulo> findByTipo(String tipo);
 
-    // Buscar por tipo Y numeroRegistro
-    Optional<Modulo> findByTipoAndNumeroRegistro(String tipo, String numeroRegistro);
+    @Query("SELECT m FROM Modulo m WHERE m.tipo = :tipo AND m.reporte.numeroRegistro = :numeroRegistro")
+    Optional<Modulo> findByTipoAndNumeroRegistro(@Param("tipo") String tipo, @Param("numeroRegistro") String numeroRegistro);
 
     // Si quieres múltiples resultados (por si hay más de uno con mismo tipo y registro)
     List<Modulo> findAllByTipoAndNumeroRegistro(String tipo, String numeroRegistro);
-    @Query("SELECT DISTINCT m.tipo FROM Modulo m WHERE m.codModulo.year = :year AND m.codModulo.periodo = :periodo")
+    @Query("SELECT DISTINCT m.tipo FROM Modulo m WHERE m.reporte.year = :year AND m.reporte.periodo = :periodo")
     List<String> findDistinctTiposByYearAndPeriodo(@Param("year") int year, @Param("periodo") int periodo);
 
-    @Query("SELECT m FROM Modulo m WHERE m.tipo = :tipo AND m.codModulo.year = :year AND m.codModulo.periodo = :periodo")
+    @Query("SELECT m FROM Modulo m WHERE m.tipo = :tipo AND m.reporte.year = :year AND m.reporte.periodo = :periodo")
     List<Modulo> findByTipoAndYearAndPeriodo(@Param("tipo") String tipo, @Param("year") int year, @Param("periodo") int periodo);
 }

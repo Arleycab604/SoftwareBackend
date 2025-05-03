@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.service;
 
+import com.saberpro.backendsoftware.model.Modulo;
 import com.saberpro.backendsoftware.model.ModuloYear;
 import com.saberpro.backendsoftware.model.Reporte;
 import com.saberpro.backendsoftware.model.ReporteYear;
@@ -52,7 +53,7 @@ public class YearDataUploadService {
         for (String tipoModulo : tiposModulo) {
             List<Integer> puntajesModulo = moduloRepo.findByTipoAndYearAndPeriodo(tipoModulo, year, periodo)
                     .stream()
-                    .map(modulo -> modulo.getPuntajeModulo())
+                    .map(Modulo::getPuntajeModulo)
                     .collect(Collectors.toList());
 
             if (!puntajesModulo.isEmpty()) {

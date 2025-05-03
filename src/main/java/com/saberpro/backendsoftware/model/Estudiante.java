@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,11 +13,13 @@ public class Estudiante {
     private Long documento;
 
     private String tipoDocumento;
-
-    @OneToOne
-    @JoinColumn(name = "nombreUsuario")  // Establece la clave foránea en la tabla Estudiante
-    private Usuario nombreUsuario;
+    private String nombreEstudiante;
 
     private String tipoDeEvaluado;
     private String ciudad;
+
+    @ManyToOne
+    @JoinColumn(name = "programa", referencedColumnName = "sniesId")
+    @JsonBackReference
+    private Programa programa;
 }
