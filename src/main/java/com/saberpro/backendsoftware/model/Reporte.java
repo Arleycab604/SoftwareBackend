@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 @Entity
 public class Reporte {
+
     @Id
     private String numeroRegistro;
 

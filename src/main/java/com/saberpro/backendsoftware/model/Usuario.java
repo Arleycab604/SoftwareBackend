@@ -13,6 +13,7 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.JOINED) // Estrategia de herencia
 public class Usuario {
     @Id
+    @Column(nullable = false)
     private String nombreUsuario;
 
     @Column(nullable = false)
@@ -24,11 +25,7 @@ public class Usuario {
     private String correo;
 
     @ManyToMany
-    @JoinTable(
-            name = "usuario_programa",
-            joinColumns = @JoinColumn(name = "nombreUsuario"),
-            inverseJoinColumns = @JoinColumn(name = "sniesId")
-    )
+    @JoinColumn(name = "sniesId", referencedColumnName = "sniesId")
     private List<Programa> programas;
 
     public Usuario() {

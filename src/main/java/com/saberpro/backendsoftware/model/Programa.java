@@ -21,11 +21,7 @@ public class Programa {
     @JsonIgnore
     @JsonManagedReference
     @ManyToMany
-    @JoinTable(
-            name = "usuario_programa",
-            joinColumns = @JoinColumn(name = "sniesId"),
-            inverseJoinColumns = @JoinColumn(name = "nombreUsuario")
-    )
+    @JoinColumn(name = "nombreUsuario", referencedColumnName = "nombreUsuario")
     private List<Usuario> usuarios = new ArrayList<>();
 
     @JsonIgnore
