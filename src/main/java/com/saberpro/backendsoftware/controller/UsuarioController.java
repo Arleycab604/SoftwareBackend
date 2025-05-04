@@ -33,9 +33,11 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Usuario usuario) {
+        System.out.println("Usuario datos: " + usuario);
         String token = usuarioService.login(usuario.getNombreUsuario(), usuario.getPassword());
         Map<String, String> response = new HashMap<>();
         response.put("token", token != null ? token : "Credenciales inválidas.");
+
         return response;
     }
 

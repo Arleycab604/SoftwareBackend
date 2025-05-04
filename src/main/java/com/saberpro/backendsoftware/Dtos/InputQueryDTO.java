@@ -1,26 +1,19 @@
 package com.saberpro.backendsoftware.Dtos;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-//Maneja un solo reporte con un módulo con su puntaje general
-//Igual a como sale en el excel
 @Getter
 @Setter
-
 @RequiredArgsConstructor
-// by Puntaje minimo, maxim, y por puntaje,
-// By year periodo, year, periodo
 public class InputQueryDTO {
-    @JsonIgnoreProperties(ignoreUnknown = true)
 
     @JsonProperty("year")
-    private int year;
+    private Integer year;
     @JsonProperty("periodo")
-    private int periodo;
+    private Integer periodo;
     @JsonProperty("nombreUsuario")
     private String nombreUsuario;
     @JsonProperty("nombrePrograma")
@@ -30,24 +23,23 @@ public class InputQueryDTO {
     @JsonProperty("numeroRegistro")
     private String numeroRegistro;
     @JsonProperty("puntajeGlobalMinimo")
-    private int puntajeGlobalMinimo;
+    private Integer puntajeGlobalMinimo;
     @JsonProperty("puntajeGlobalMaximo")
-    private int puntajeGlobalMaximo;
+    private Integer puntajeGlobalMaximo;
     @JsonProperty("percentilGlobal")
-    private int percentilGlobal;
+    private Integer percentilGlobal;
     @JsonProperty("novedades")
     private String novedades;
     @JsonProperty("tipoModulo")
     private String tipoModulo;
-
     @JsonProperty("puntajeModuloMinimo")
-    private int puntajeModuloMinimo;
+    private Integer puntajeModuloMinimo;
     @JsonProperty("puntajeModuloMaximo")
-    private int puntajeModuloMaximo;
+    private Integer puntajeModuloMaximo;
     @JsonProperty("nivelDesempeno")
     private String nivelDesempeno;
     @JsonProperty("percentilModulo")
-    private int percentilModulo;
+    private Integer percentilModulo;
 
     @Override
     public String toString() {
@@ -63,8 +55,8 @@ public class InputQueryDTO {
                 ", percentilGlobal=" + percentilGlobal +
                 ", novedades='" + novedades + '\'' +
                 ", tipoModulo='" + tipoModulo + '\'' +
-                ", puntajeMinimoModulo=" + puntajeModuloMinimo +
-                ", puntajeMaximoModulo=" + puntajeModuloMaximo +
+                ", puntajeModuloMinimo=" + puntajeModuloMinimo +
+                ", puntajeModuloMaximo=" + puntajeModuloMaximo +
                 ", nivelDesempeno='" + nivelDesempeno + '\'' +
                 ", percentilModulo=" + percentilModulo +
                 '}';
