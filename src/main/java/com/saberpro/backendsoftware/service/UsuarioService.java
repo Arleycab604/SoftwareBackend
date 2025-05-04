@@ -3,7 +3,8 @@ package com.saberpro.backendsoftware.service;
 import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
-import com.saberpro.backendsoftware.security.JwtUtil;
+import com.saberpro.backendsoftware.security.util.JwtUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class UsuarioService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
+    @Transactional
     public boolean crearUsuario(Usuario usuario) {
         if (usuarioRepositorio.findByNombreUsuario(usuario.getNombreUsuario()).isPresent()) {
             return false;
@@ -32,7 +34,7 @@ public class UsuarioService {
         usuarioRepositorio.save(usuario);
         return true;
     }
-
+    @Transactional
     public String login(String nombreUsuario, String password) {
         Optional<Usuario> userOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
 
@@ -44,6 +46,7 @@ public class UsuarioService {
         }
         return null;
     }
+    @Transactional
     public boolean cambiarRolUsuario(String nombreUsuario, String nuevoRol) {
         return usuarioRepositorio.findByNombreUsuario(nombreUsuario)
                 .map(usuario -> {
@@ -53,14 +56,14 @@ public class UsuarioService {
                 })
                 .orElse(false);
     }
-
+    @Transactional
     public List<UsuarioDTO> buscarUsuariosExcluyendoTipo(String tipoExcluido) {
         return usuarioRepositorio.findByTipoDeUsuarioNot(tipoExcluido)
                 .stream()
                 .map(this::convertirAUsuarioDTO)
                 .collect(Collectors.toList());
     }
-
+    @Transactional
     public List<UsuarioDTO> buscarPorTipoUsuario(String tipoUsuario) {
         return usuarioRepositorio.findByTipoDeUsuario(tipoUsuario)
                 .stream()

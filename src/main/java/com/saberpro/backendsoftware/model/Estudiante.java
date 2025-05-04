@@ -14,12 +14,38 @@ public class Estudiante {
 
     private String tipoDocumento;
     private String nombreEstudiante;
-
     private String tipoDeEvaluado;
     private String ciudad;
 
     @ManyToOne
-    @JoinColumn(name = "programa", referencedColumnName = "sniesId")
+    @JoinColumn(name = "snies_id", referencedColumnName = "sniesId")
     @JsonBackReference
     private Programa programa;
+
+    @OneToOne(mappedBy = "estudiante")
+    private Reporte reporte;
+
+    public Estudiante() {
+        documento = 0L;
+        tipoDocumento = "";
+        nombreEstudiante = "";
+        tipoDeEvaluado = "";
+        ciudad = "";
+    }
+    public Estudiante(Long documento, String tipoDocumento, String nombreEstudiante, String tipoDeEvaluado, String ciudad) {
+        this.documento = documento;
+        this.tipoDocumento = tipoDocumento;
+        this.nombreEstudiante = nombreEstudiante;
+        this.tipoDeEvaluado = tipoDeEvaluado;
+        this.ciudad = ciudad;
+    }
+    public String toString() {
+        return "Estudiante{" +
+                "documento=" + documento +
+                ", tipoDocumento='" + tipoDocumento + '\'' +
+                ", nombreEstudiante='" + nombreEstudiante + '\'' +
+                ", tipoDeEvaluado='" + tipoDeEvaluado + '\'' +
+                ", ciudad='" + ciudad + '\'' +
+                '}';
+    }
 }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/usuario")
+@RequestMapping("/SaberPro/usuario")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;

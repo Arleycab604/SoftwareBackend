@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reportes")
+@RequestMapping("/SaberPro/reportes")
 @RequiredArgsConstructor
 public class QueryController {
 
@@ -33,14 +33,11 @@ public class QueryController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
 
-    @PostMapping("/filtrar")
+    @PostMapping("/Query")
     public ResponseEntity<List<ReporteDTO>> filtrarReportes(
-            @RequestBody(description = "Criterios de filtrado", required = true)
-            InputQueryDTO inputQueryDTO,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        List<ReporteDTO> resultados = queryService.filtrarDatos(inputQueryDTO, pageable);
+            @RequestBody InputQueryDTO inputQueryDTO ){
+        // Pageable pageable = PageRequest.of(page, size);
+        List<ReporteDTO> resultados = queryService.filtrarDatos(inputQueryDTO);
         return ResponseEntity.ok(resultados);
     }
 }

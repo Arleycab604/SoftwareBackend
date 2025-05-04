@@ -1,4 +1,4 @@
-package com.saberpro.backendsoftware.security;
+package com.saberpro.backendsoftware.security.util;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

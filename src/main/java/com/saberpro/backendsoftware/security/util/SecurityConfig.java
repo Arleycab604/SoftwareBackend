@@ -1,4 +1,4 @@
-package com.saberpro.backendsoftware.security;
+package com.saberpro.backendsoftware.security.util;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

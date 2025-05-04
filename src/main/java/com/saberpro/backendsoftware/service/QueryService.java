@@ -4,19 +4,24 @@ import com.saberpro.backendsoftware.Dtos.InputQueryDTO;
 import com.saberpro.backendsoftware.Dtos.ReporteDTO;
 import com.saberpro.backendsoftware.model.*;
 import com.saberpro.backendsoftware.repository.*;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 
 
 import java.util.ArrayList;
 import java.util.List;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
 public class QueryService {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private final EstudianteRepositorio estudianteRepo;
     private final UsuarioRepositorio usuarioRepo;
@@ -24,87 +29,97 @@ public class QueryService {
     private final ProgramaRepositorio programaRepo;
     private final ModuloRepositorio moduloRepo;
 
+    @Transactional
+    public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO) {
+        System.out.println("inputQUERYDTO = " + inputQueryDTO);
+        // Crear el constructor de la consulta
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Reporte> query = cb.createQuery(Reporte.class);
+        Root<Reporte> reporte = query.from(Reporte.class);
+        Join<Reporte, Modulo> modulo = reporte.join("modulos", JoinType.LEFT);
+        Join<Reporte, Estudiante> estudiante = reporte.join("estudiante", JoinType.LEFT);
+        Join<Reporte, PeriodoEvaluacion> periodo = reporte.join("periodoEvaluacion", JoinType.LEFT);
 
-    public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO, Pageable pageable) {
-        try {
-            System.out.println(inputQueryDTO);
-            // Imprimir el contenido del InputQueryDTO en formato JSON para depuración
-            ObjectMapper objectMapper = new ObjectMapper();
-            String inputQueryJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputQueryDTO);
-            System.out.println("Datos del InputQueryDTO:\n" + inputQueryJson);
-        } catch (Exception e) {
-            System.err.println("Error al imprimir InputQueryDTO: " + e.getMessage());
+        // Lista de predicados para los filtros
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Agregar filtros dinámicamente
+        if (inputQueryDTO.getYear() > 0) {
+            predicates.add(cb.equal(periodo.get("year"), inputQueryDTO.getYear()));}
+        if (inputQueryDTO.getPeriodo() > 0) {
+            predicates.add(cb.equal(periodo.get("periodo"), inputQueryDTO.getPeriodo()));}
+        if (inputQueryDTO.getNombreUsuario() != null && !inputQueryDTO.getNombreUsuario().isEmpty()) {
+            predicates.add(cb.equal(estudiante.get("nombreEstudiante"), inputQueryDTO.getNombreUsuario()));}
+        if (inputQueryDTO.getNombrePrograma() != null && !inputQueryDTO.getNombrePrograma().isEmpty()) {
+            predicates.add(cb.equal(estudiante.get("programa").get("nombrePrograma"), inputQueryDTO.getNombrePrograma()));}
+        if (inputQueryDTO.getGrupoDeReferencia() != null && !inputQueryDTO.getGrupoDeReferencia().isEmpty()) {
+            predicates.add(cb.equal(estudiante.get("programa").get("grupoDeReferencia"), inputQueryDTO.getGrupoDeReferencia()));}
+        if (inputQueryDTO.getNumeroRegistro() != null && !inputQueryDTO.getNumeroRegistro().isEmpty()) {
+            System.out.println("Valor de numeroRegistro: " + inputQueryDTO.getNumeroRegistro());
+            predicates.add(cb.equal(reporte.get("numeroRegistro"), inputQueryDTO.getNumeroRegistro()));
+            System.out.println("Predicado añadido para numeroRegistro: " + inputQueryDTO.getNumeroRegistro());
         }
+        if (inputQueryDTO.getPuntajeGlobalMinimo() > 0) {
+            predicates.add(cb.greaterThanOrEqualTo(reporte.get("puntajeGlobal"), inputQueryDTO.getPuntajeGlobalMinimo()));}
+        if (inputQueryDTO.getPuntajeGlobalMaximo() > 0) {
+            predicates.add(cb.lessThanOrEqualTo(reporte.get("puntajeGlobal"), inputQueryDTO.getPuntajeGlobalMaximo()));}
+        if (inputQueryDTO.getPercentilGlobal() > 0) {
+            predicates.add(cb.equal(reporte.get("percentilGlobal"), inputQueryDTO.getPercentilGlobal()));}
+        if (inputQueryDTO.getNovedades() != null && !inputQueryDTO.getNovedades().isEmpty()) {
+            predicates.add(cb.equal(reporte.get("novedades"), inputQueryDTO.getNovedades()));}
+        if (inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()) {
+            predicates.add(cb.equal(modulo.get("tipo"), inputQueryDTO.getTipoModulo()));}
+        if (inputQueryDTO.getNivelDesempeno() != null && !inputQueryDTO.getNivelDesempeno().isEmpty()) {
+            predicates.add(cb.equal(modulo.get("nivelDesempeno"), inputQueryDTO.getNivelDesempeno()));}
+        if (inputQueryDTO.getPercentilModulo() > 0) {
+            predicates.add(cb.equal(modulo.get("percentilNacional"), inputQueryDTO.getPercentilModulo()));}
+        if (inputQueryDTO.getPuntajeModuloMinimo() > 0) {
+            predicates.add(cb.greaterThanOrEqualTo(modulo.get("puntajeModulo"), inputQueryDTO.getPuntajeModuloMinimo()));}
+        if (inputQueryDTO.getPuntajeModuloMaximo() > 0) {
+            predicates.add(cb.lessThanOrEqualTo(modulo.get("puntajeModulo"), inputQueryDTO.getPuntajeModuloMaximo()));}
 
+        System.out.println("Predicados: " + predicates);
+        // Aplicar los predicados a la consulta
+        query.where(cb.and(predicates.toArray(new Predicate[0])));
+
+        System.out.println("Query realizada: " + query.getOrderList().toString());
+        // Ejecutar la consulta
+        List<Reporte> reportes = entityManager.createQuery(query).getResultList();
+
+        // Convertir los resultados a ReporteDTO
         List<ReporteDTO> resultados = new ArrayList<>();
-
-        // Obtener todos los reportes
-        Page<Reporte> reportes = reporteRepo.findAll(pageable);
-
-        // Dividir el campo tipoModulo en una lista si contiene valores separados por comas
-        List<String> tiposModulo = inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()
-                ? List.of(inputQueryDTO.getTipoModulo().split(","))
-                : new ArrayList<>();
-
-        for (Reporte reporte : reportes) {
-            // Filtrar por criterios globales
-            boolean cumpleFiltrosGlobales =
-                    (inputQueryDTO.getYear() == 0 || reporte.getYear() == inputQueryDTO.getYear()) &&
-                            (inputQueryDTO.getPeriodo() == 0 || reporte.getPeriodo() == inputQueryDTO.getPeriodo()) &&
-                            (inputQueryDTO.getNombreUsuario() == null || inputQueryDTO.getNombreUsuario().isEmpty() ||
-                                    reporte.getEstudiante().getNombreEstudiante().equalsIgnoreCase(inputQueryDTO.getNombreUsuario())) &&
-                            (inputQueryDTO.getNombrePrograma() == null || inputQueryDTO.getNombrePrograma().isEmpty() ||
-                                    reporte.getEstudiante().getPrograma().getNombrePrograma().equalsIgnoreCase(inputQueryDTO.getNombrePrograma())) &&
-                            (inputQueryDTO.getNumeroRegistro() == null || inputQueryDTO.getNumeroRegistro().isEmpty() ||
-                                    reporte.getNumeroRegistro().equalsIgnoreCase(inputQueryDTO.getNumeroRegistro())) &&
-                            (inputQueryDTO.getPuntajeGlobalMinimo() == 0 || reporte.getPuntajeGlobal() >= inputQueryDTO.getPuntajeGlobalMinimo()) &&
-                            (inputQueryDTO.getPuntajeGlobalMaximo() == 0 || reporte.getPuntajeGlobal() <= inputQueryDTO.getPuntajeGlobalMaximo());
-
-            if (cumpleFiltrosGlobales) {
-                // Iterar sobre los módulos asociados al reporte
-                for (Modulo modulo : reporte.getModulos()) {
-                    // Filtrar por criterios específicos de módulos
-                    boolean cumpleFiltrosModulo =
-                            (tiposModulo.isEmpty() || tiposModulo.contains(modulo.getTipo())) &&
-                                    (inputQueryDTO.getNivelDesempeno() == null || inputQueryDTO.getNivelDesempeno().isEmpty() ||
-                                            modulo.getNivelDesempeno().equalsIgnoreCase(inputQueryDTO.getNivelDesempeno())) &&
-                                    (inputQueryDTO.getPuntajeMinimoModulo() == 0 || modulo.getPuntajeModulo() >= inputQueryDTO.getPuntajeMinimoModulo()) &&
-                                    (inputQueryDTO.getPuntajeMaximoModulo() == 0 || modulo.getPuntajeModulo() <= inputQueryDTO.getPuntajeMaximoModulo());
-
-                    if (cumpleFiltrosModulo) {
-                        // Crear un ReporteDTO para cada módulo que cumpla con los filtros
-                        ReporteDTO dto = convertToReporteDTO(reporte, modulo);
-                        resultados.add(dto);
-                    }
-                }
+        for (Reporte reporteEntity : reportes) {
+            for (Modulo moduloEntity : reporteEntity.getModulos()) {
+                ReporteDTO dto = convertToReporteDTO(reporteEntity, moduloEntity);
+                resultados.add(dto);
             }
         }
-
-        System.out.println("Resultados encontrados: " + resultados.size());
+        entityManager.close();
+        System.out.println("Resultados encontrados: "+ resultados.size());
         return resultados;
     }
 
     private ReporteDTO convertToReporteDTO(Reporte reporte, Modulo modulo) {
         //System.out.println("Convirtiendo reporte: " + reporte.getNumero_Registro() + " con módulo: " + modulo.getTipo());
         return new ReporteDTO(
-                reporte.getEstudiante().getDocumento(),                          //Documento
-                reporte.getEstudiante().getTipoDocumento(),                      // Tipo Documento
-                reporte.getEstudiante().getCiudad(),                             // Ciudad
-                reporte.getEstudiante().getTipoDeEvaluado(),                     // Tipo de evaluado
-                reporte.getEstudiante().getNombreEstudiante(),                   // Nombre estudiante
-                reporte.getEstudiante().getPrograma().getSniesId(),              // SniesId
-                reporte.getEstudiante().getPrograma().getNombrePrograma(),       // Nombre programa
-                reporte.getEstudiante().getPrograma().getGrupoDeReferencia(),    // Grupo de referencia
-                reporte.getNumeroRegistro(),                                     // Número de registro
-                reporte.getYear(),                                               // Año
-                reporte.getPeriodo(),                                            // Periodo
-                reporte.getPuntajeGlobal(),
-                reporte.getPercentilGlobal(),
-                reporte.getNovedades(),
-                modulo.getTipo(),                                                // Tipo de módulo
-                modulo.getPuntajeModulo(),                                       // Puntaje del módulo
-                modulo.getNivelDesempeno(),                                      // Nivel de desempeño
-                modulo.getPercentilNacional()                                    // Percentil nacional del módulo
+                reporte.getEstudiante().getDocumento(),                         //Documento
+                reporte.getEstudiante().getTipoDocumento(),                     // Tipo Documento
+                reporte.getEstudiante().getCiudad(),                            // Ciudad
+                reporte.getEstudiante().getTipoDeEvaluado(),                    // Tipo de evaluado
+                reporte.getEstudiante().getNombreEstudiante(),                  // Nombre estudiante
+                reporte.getEstudiante().getPrograma().getSniesId(),             // SniesId
+                reporte.getEstudiante().getPrograma().getNombrePrograma(),      // Nombre programa
+                reporte.getEstudiante().getPrograma().getGrupoDeReferencia(),   // Grupo de referencia
+                reporte.getNumeroRegistro(),                                    // Número de registro
+                reporte.getPeriodoEvaluacion().getYear(),                       // Año
+                reporte.getPeriodoEvaluacion().getPeriodo(),                    // Periodo
+                reporte.getPuntajeGlobal(),                                     // Puntaje Global
+                reporte.getPercentilGlobal(),                                   // Percentil Global
+                reporte.getNovedades(),                                         // Novedades
+                modulo.getTipo(),                                               // Tipo de módulo
+                modulo.getPuntajeModulo(),                                      // Puntaje del módulo
+                modulo.getNivelDesempeno(),                                     // Nivel de desempeño
+                modulo.getPercentilModulo()                                     // Percentil nacional del módulo
         );
     }
 }

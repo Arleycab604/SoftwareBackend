@@ -1,8 +1,8 @@
 package com.saberpro.backendsoftware.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED) // Estrategia de herencia
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario {
     @Id
     @Column(nullable = false)
@@ -24,29 +24,29 @@ public class Usuario {
 
     private String correo;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "sniesId", referencedColumnName = "sniesId")
-    private List<Programa> programas;
+    private Programa programa;
 
     public Usuario() {
         nombreUsuario = "";
         password = "";
         tipoDeUsuario = "";
         correo = "";
-        programas = new ArrayList<>();
     }
-    public Usuario(String nombreUsuario, String password, String tipoDeUsuario, String correo, List<Programa> programas) {
+    public Usuario(String nombreUsuario, String password, String tipoDeUsuario, String correo) {
         this.nombreUsuario = nombreUsuario;
         this.password = password;
         this.tipoDeUsuario = tipoDeUsuario;
         this.correo = correo;
-        this.programas = programas;
     }
-    public void AddPrograma(Programa programa) {
-        if (programas != null) {
-            programas.add(programa);
-        } else {
-            throw new IllegalStateException("La lista de programas no está inicializada.");
-        }
+
+    public String toString() {
+        return "Usuario{" +
+                "nombreUsuario='" + nombreUsuario + '\'' +
+                ", password='" + password + '\'' +
+                ", tipoDeUsuario='" + tipoDeUsuario + '\'' +
+                ", correo='" + correo + '\'' +
+                '}';
     }
 }

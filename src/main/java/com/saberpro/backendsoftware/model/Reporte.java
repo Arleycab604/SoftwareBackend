@@ -1,9 +1,11 @@
 package com.saberpro.backendsoftware.model;
 
+import com.saberpro.backendsoftware.repository.EstudianteRepositorio;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,28 +13,50 @@ import java.util.List;
 @Setter
 @Entity
 public class Reporte {
-
     @Id
     private String numeroRegistro;
-
-    @ManyToOne
-    @JoinColumn(name = "nombreEstudiante", referencedColumnName = "nombreEstudiante")
+    private String novedades;
+    @OneToOne
+    @JoinColumn(name = "estudiante_documento", referencedColumnName = "documento")
     private Estudiante estudiante;
 
-    private int year;
-    private int periodo;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "id_periodo_evaluacion", referencedColumnName = "idPeriodoEvaluacion")
+    private PeriodoEvaluacion periodoEvaluacion;
+
     private int puntajeGlobal;
     private int percentilGlobal;
 
     @OneToMany(mappedBy = "reporte")
-    private List<Modulo> modulos;
-
-    private String novedades;
+    private List<Modulo> modulos = new ArrayList<>();
 
     public Reporte() {
         numeroRegistro = "";
-        year = 0;
-        periodo = 0;
-        modulos = new ArrayList<>(7);
+        novedades = "";
+        puntajeGlobal = 0;
+        percentilGlobal = 0;
+    }
+    public Reporte(String numeroRegistro, PeriodoEvaluacion perEv, Estudiante estudiante, String novedades, int puntajeGlobal, int percentilGlobal) {
+        this.numeroRegistro = numeroRegistro;
+        this.novedades = novedades;
+        this.puntajeGlobal = puntajeGlobal;
+        this.percentilGlobal = percentilGlobal;
+        this.periodoEvaluacion=perEv;
+        this.estudiante = estudiante;
+    }
+    public void addModulo(Modulo modulo) {
+        this.modulos.add(modulo);
+        modulo.setReporte(this);
+    }
+
+    public String toString() {
+        return "Reporte{" +
+                "numeroRegistro='" + numeroRegistro + '\'' +
+                ", novedades='" + novedades + '\'' +
+                ", estudiante=" + estudiante +
+                ", periodoEvaluacion=" + periodoEvaluacion +
+                ", puntajeGlobal=" + puntajeGlobal +
+                ", percentilGlobal=" + percentilGlobal +
+                '}';
     }
 }

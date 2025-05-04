@@ -8,26 +8,34 @@ import java.util.*;
 
 import com.saberpro.backendsoftware.model.*;
 import com.saberpro.backendsoftware.repository.*;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 
 @Service
 @RequiredArgsConstructor
 public class CsvUploadService {
 
-    private final UsuarioRepositorio usuarioRepo;
     private final EstudianteRepositorio estudianteRepo;
     private final ProgramaRepositorio programaRepo;
     private final ReporteRepositorio reporteRepo;
     private final ModuloRepositorio moduloRepo;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PeriodoEvaluacionRepositorio periodoEvRepo;
     private final YearDataUploadService yearDataUploadService;
+    //private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public String uploadExcel(MultipartFile file,int year, int periodo) throws Exception {
-        // Obtener el nombre del archivo
+    @PostConstruct
+    public void init() {
+        System.out.println("PeriodoEvaluacionRepositorio = " + periodoEvRepo);
+    }
+
+    @Transactional
+    public String uploadExcel(MultipartFile file, int year, int periodo) throws Exception {
         String fileName = file.getOriginalFilename();
         if (fileName == null || fileName.isEmpty()) {
             throw new IllegalArgumentException("El archivo no tiene un nombre válido.");
@@ -50,6 +58,15 @@ public class CsvUploadService {
 
         FileWriter passwordWriter = new FileWriter("passwords.txt", true);
 
+        PeriodoEvaluacion periodoEv = periodoEvRepo.findByYearAndPeriodo(year, periodo).orElse(null);
+        if (periodoEv == null) {
+            periodoEv = new PeriodoEvaluacion();
+            periodoEv.setYear(year);
+            periodoEv.setPeriodo(periodo);
+            periodoEvRepo.saveAndFlush(periodoEv);
+        }
+        System.out.println("PeriodoEv: " + periodoEv);
+
         for (CSVRecord record : parser) {
             String tipoDocumento = record.get(headerMap.get("tipo de documento")).trim(),
                     documento = record.get(headerMap.get("documento")).trim(),
@@ -69,72 +86,73 @@ public class CsvUploadService {
                     puntajeModulo = Integer.parseInt(record.get(headerMap.get("puntaje modulo")).trim()),
                     percentilNacionalModulo = Integer.parseInt(record.get(headerMap.get("percentil nacional modulo")).trim());
 
-
             // --- Programa ---
             Programa programa = programaRepo.findById(sniesId).orElse(null);
             if (programa == null) {
                 programa = new Programa();
                 programa.setSniesId(sniesId);
-                programa.setNombrePrograma(nombrePrograma);
+                programa.setNombrePrograma(nombre);
                 programa.setGrupoDeReferencia(grupoReferencia);
-                programaRepo.save(programa);
+                programaRepo.saveAndFlush(programa);
             }
+            System.out.println("Programa " + programa);
 
             // --- Estudiante ---
             Long doc = Long.parseLong(documento);
             Estudiante estudiante = estudianteRepo.findById(doc).orElse(null);
             if (estudiante == null) {
                 estudiante = new Estudiante();
+                estudiante.setNombreEstudiante(nombre);
                 estudiante.setDocumento(doc);
                 estudiante.setTipoDocumento(tipoDocumento);
-                estudiante.setNombreEstudiante(nombre);
                 estudiante.setTipoDeEvaluado(tipoEvaluado);
+                estudiante.setTipoDocumento(tipoDocumento);
                 estudiante.setCiudad(ciudad);
-                estudianteRepo.save(estudiante);
+                estudiante.setPrograma(programa);
+                estudianteRepo.saveAndFlush(estudiante);
             }
 
+            System.out.println("Estudiante " + estudiante);
             // --- Reporte ---
             Reporte reporte = reporteRepo.findById(numeroRegistro).orElse(null);
             if (reporte == null) {
                 reporte = new Reporte();
                 reporte.setNumeroRegistro(numeroRegistro);
                 reporte.setEstudiante(estudiante);
-                reporte.setYear(year); // Usar el año extraído
-                reporte.setPeriodo(periodo); // Usar el periodo extraído
+                reporte.setPeriodoEvaluacion(periodoEv);
+                reporte.setNovedades(novedades);
                 reporte.setPuntajeGlobal(puntajeGlobal);
                 reporte.setPercentilGlobal(percentilNacionalGlobal);
-                reporte.setNovedades(novedades);
                 reporte.setModulos(new ArrayList<>());
-                reporteRepo.save(reporte);
+                reporteRepo.saveAndFlush(reporte);
             }
 
+            System.out.println("Reporte " + reporte);
             // --- Módulo ---
             Modulo modulo = moduloRepo.findByTipoAndNumeroRegistro(tipoModulo, numeroRegistro).orElse(null);
             if (modulo == null) {
                 modulo = new Modulo();
-                modulo.setTipo(tipoModulo);
-                modulo.setReporte(reporte);
+                modulo.setPercentilModulo(percentilNacionalModulo);
                 modulo.setPuntajeModulo(puntajeModulo);
                 modulo.setNivelDesempeno(nivelDesempeno);
-                modulo.setPercentilNacional(percentilNacionalModulo);
+                modulo.setTipo(tipoModulo);
                 modulo.setReporte(reporte);
-                moduloRepo.save(modulo);
-
-                // Añadir a la lista en el reporte
-                reporte.getModulos().add(modulo);
-                reporteRepo.save(reporte); // importante para mantener la relación bidireccional
+                moduloRepo.saveAndFlush(modulo);
+                reporte.addModulo(modulo);
+                reporteRepo.saveAndFlush(reporte); // importante para mantener la relación bidireccional
             }
+            System.out.println("modulo : " + modulo);
         }
 
-        passwordWriter.close();
-
-        // Llamar a YearDataUploadService con el año y periodo extraídos
+        parser.close();
+        reader.close();
         yearDataUploadService.processYearData(year, periodo);
-
+        passwordWriter.close();
         return "Archivo procesado exitosamente";
     }
+
     private String generateRandomPassword() {
-        return UUID.randomUUID().toString().substring(0, 8);
+        return UUID.randomUUID().toString().substring(0, 15);
     }
 
     private static String normalize(String input) {
