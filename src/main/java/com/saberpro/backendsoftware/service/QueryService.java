@@ -40,55 +40,75 @@ public class QueryService {
         Join<Reporte, PeriodoEvaluacion> periodo = reporte.join("periodoEvaluacion", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
+        List<String> filtrosAplicados = new ArrayList<>();
 
-        // Verificaciones de null antes de agregar predicados
+
         if (inputQueryDTO.getYear() != null && inputQueryDTO.getYear() > 0) {
             predicates.add(cb.equal(periodo.get("year"), inputQueryDTO.getYear()));
+            filtrosAplicados.add("periodo.year = " + inputQueryDTO.getYear());
         }
         if (inputQueryDTO.getPeriodo() != null && inputQueryDTO.getPeriodo() > 0) {
             predicates.add(cb.equal(periodo.get("periodo"), inputQueryDTO.getPeriodo()));
+            filtrosAplicados.add("periodo.periodo = " + inputQueryDTO.getPeriodo());
         }
         if (inputQueryDTO.getNombreUsuario() != null && !inputQueryDTO.getNombreUsuario().isEmpty()) {
             predicates.add(cb.equal(estudiante.get("nombreEstudiante"), inputQueryDTO.getNombreUsuario()));
+            filtrosAplicados.add("estudiante.nombreEstudiante = '" + inputQueryDTO.getNombreUsuario() + "'");
         }
         if (inputQueryDTO.getNombrePrograma() != null && !inputQueryDTO.getNombrePrograma().isEmpty()) {
             predicates.add(cb.equal(estudiante.get("programa").get("nombrePrograma"), inputQueryDTO.getNombrePrograma()));
+            filtrosAplicados.add("programa.nombrePrograma = '" + inputQueryDTO.getNombrePrograma() + "'");
         }
         if (inputQueryDTO.getGrupoDeReferencia() != null && !inputQueryDTO.getGrupoDeReferencia().isEmpty()) {
             predicates.add(cb.equal(estudiante.get("programa").get("grupoDeReferencia"), inputQueryDTO.getGrupoDeReferencia()));
+            filtrosAplicados.add("programa.grupoDeReferencia = '" + inputQueryDTO.getGrupoDeReferencia() + "'");
         }
         if (inputQueryDTO.getNumeroRegistro() != null && !inputQueryDTO.getNumeroRegistro().isEmpty()) {
-            System.out.println("Valor de numeroRegistro: " + inputQueryDTO.getNumeroRegistro());
             predicates.add(cb.equal(reporte.get("numeroRegistro"), inputQueryDTO.getNumeroRegistro()));
-            System.out.println("Predicado añadido para numeroRegistro: " + inputQueryDTO.getNumeroRegistro());
+            filtrosAplicados.add("reporte.numeroRegistro = '" + inputQueryDTO.getNumeroRegistro() + "'");
         }
         if (inputQueryDTO.getPuntajeGlobalMinimo() != null && inputQueryDTO.getPuntajeGlobalMinimo() > 0) {
             predicates.add(cb.greaterThanOrEqualTo(reporte.get("puntajeGlobal"), inputQueryDTO.getPuntajeGlobalMinimo()));
+            filtrosAplicados.add("reporte.puntajeGlobal >= " + inputQueryDTO.getPuntajeGlobalMinimo());
         }
         if (inputQueryDTO.getPuntajeGlobalMaximo() != null && inputQueryDTO.getPuntajeGlobalMaximo() > 0) {
             predicates.add(cb.lessThanOrEqualTo(reporte.get("puntajeGlobal"), inputQueryDTO.getPuntajeGlobalMaximo()));
+            filtrosAplicados.add("reporte.puntajeGlobal <= " + inputQueryDTO.getPuntajeGlobalMaximo());
         }
         if (inputQueryDTO.getPercentilGlobal() != null && inputQueryDTO.getPercentilGlobal() > 0) {
             predicates.add(cb.equal(reporte.get("percentilGlobal"), inputQueryDTO.getPercentilGlobal()));
+            filtrosAplicados.add("reporte.percentilGlobal = " + inputQueryDTO.getPercentilGlobal());
         }
         if (inputQueryDTO.getNovedades() != null && !inputQueryDTO.getNovedades().isEmpty()) {
             predicates.add(cb.equal(reporte.get("novedades"), inputQueryDTO.getNovedades()));
+            filtrosAplicados.add("reporte.novedades = '" + inputQueryDTO.getNovedades() + "'");
         }
         if (inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()) {
-            predicates.add(cb.equal(modulo.get("tipo"), inputQueryDTO.getTipoModulo()));
+            String[] tipoModuloArray = inputQueryDTO.getTipoModulo().split(",");
+            predicates.add(modulo.get("tipo").in((Object[]) tipoModuloArray));
+
+            filtrosAplicados.add("modulo.tipo IN (" + String.join(", ", tipoModuloArray) + ")");
         }
         if (inputQueryDTO.getNivelDesempeno() != null && !inputQueryDTO.getNivelDesempeno().isEmpty()) {
             predicates.add(cb.equal(modulo.get("nivelDesempeno"), inputQueryDTO.getNivelDesempeno()));
+            filtrosAplicados.add("modulo.nivelDesempeno = '" + inputQueryDTO.getNivelDesempeno() + "'");
         }
         if (inputQueryDTO.getPercentilModulo() != null && inputQueryDTO.getPercentilModulo() > 0) {
             predicates.add(cb.equal(modulo.get("percentilNacional"), inputQueryDTO.getPercentilModulo()));
+            filtrosAplicados.add("modulo.percentilNacional = " + inputQueryDTO.getPercentilModulo());
         }
         if (inputQueryDTO.getPuntajeModuloMinimo() != null && inputQueryDTO.getPuntajeModuloMinimo() > 0) {
             predicates.add(cb.greaterThanOrEqualTo(modulo.get("puntajeModulo"), inputQueryDTO.getPuntajeModuloMinimo()));
+            filtrosAplicados.add("modulo.puntajeModulo >= " + inputQueryDTO.getPuntajeModuloMinimo());
         }
         if (inputQueryDTO.getPuntajeModuloMaximo() != null && inputQueryDTO.getPuntajeModuloMaximo() > 0) {
             predicates.add(cb.lessThanOrEqualTo(modulo.get("puntajeModulo"), inputQueryDTO.getPuntajeModuloMaximo()));
+            filtrosAplicados.add("modulo.puntajeModulo <= " + inputQueryDTO.getPuntajeModuloMaximo());
         }
+
+        // Para debug/log:
+        System.out.println("Filtros aplicados:");
+        filtrosAplicados.forEach(System.out::println);
 
         System.out.println("Predicados: " + predicates);
         query.where(cb.and(predicates.toArray(new Predicate[0])));
