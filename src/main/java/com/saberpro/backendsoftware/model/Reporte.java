@@ -9,6 +9,20 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@NamedEntityGraph(
+        name = "Reporte.dtoGraph",
+        attributeNodes = {
+                @NamedAttributeNode(value="estudiante", subgraph="estudianteSubgraph"),
+                @NamedAttributeNode("periodoEvaluacion"),
+                @NamedAttributeNode("modulos")
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "estudianteSubgraph", attributeNodes = {
+                        @NamedAttributeNode("programa"),
+                })
+        }
+)
 @Getter
 @Setter
 @Entity

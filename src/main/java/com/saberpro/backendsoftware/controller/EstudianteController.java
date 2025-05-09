@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Optional;
 
-
+//Unused
 public class EstudianteController {
     private final EstudianteRepositorio repositorio;
 
@@ -16,8 +16,6 @@ public class EstudianteController {
 
     @GetMapping("/{documento}")
     public Optional<Estudiante> getEstudiante(@PathVariable Long documento) {
-        return repositorio.findById(documento) //Remover
-                .filter(u -> u instanceof Estudiante)
-                .map(u -> (Estudiante) u);
+        return repositorio.findById(documento);
     }
 }

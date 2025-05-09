@@ -6,9 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Period;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Repository;
 @Repository
 public interface ReporteYearRepositorio extends JpaRepository<ReporteYear, Integer> {
     void deleteByPeriodoEvaluacion(PeriodoEvaluacion periodoEvaluacion);
-    List<ReporteYear> findByPeriodoEvaluacion(PeriodoEvaluacion periodoEvaluacion);
+    Optional<ReporteYear> findByPeriodoEvaluacion(PeriodoEvaluacion periodoEvaluacion);
 }

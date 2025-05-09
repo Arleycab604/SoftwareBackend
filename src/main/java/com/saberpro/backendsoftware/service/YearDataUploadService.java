@@ -4,6 +4,7 @@ import com.saberpro.backendsoftware.model.*;
 import com.saberpro.backendsoftware.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.origin.SystemEnvironmentOrigin;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,41 +25,37 @@ public class YearDataUploadService {
         System.out.println("Pasando a yearDataUploadService");
         PeriodoEvaluacion periodoEv = periodoEvRepo.findByYearAndPeriodo(year, periodo).orElse(null);
         if (periodoEv == null) {
-            periodoEv = new PeriodoEvaluacion(year,periodo);
+            periodoEv = new PeriodoEvaluacion(year, periodo);
             periodoEvRepo.saveAndFlush(periodoEv);
             System.out.println("periodoEv GUARDADO = " + periodoEv);
+        } else {
+            System.out.println("PeriodoEvaluacion ya existe: " + periodoEv);
         }
         System.out.println("periodoEv = " + periodoEv);
-        // --- Eliminar datos existentes para el año y periodo ---
-        List<ReporteYear> reportesYear = reporteYearRepo.findByPeriodoEvaluacion(periodoEv);
-        if (reportesYear != null && !reportesYear.isEmpty()) {
-            moduloYearRepo.deleteByReporteYear(reportesYear.getFirst());
-            reporteYearRepo.deleteByPeriodoEvaluacion(periodoEv);
-        } else {
-            System.out.println("No se encontraron datos para eliminar en reporteYear.");
-        }
-        // --- Calcular y guardar ReporteYear ---
+
+        // --- Calcular y actualizar ReporteYear ---
         List<Integer> puntajesGlobales = reporteRepo.findByPeriodoEvaluacion(periodoEv)
                 .stream()
                 .map(Reporte::getPuntajeGlobal)
                 .collect(Collectors.toList());
 
-        System.out.println("hola");
-        ReporteYear reporteYear = new ReporteYear();
         if (!puntajesGlobales.isEmpty()) {
             double media = calculateMean(puntajesGlobales);
             double varianza = calculateVariance(puntajesGlobales, media);
 
+            ReporteYear reporteYear = reporteYearRepo.findByPeriodoEvaluacion(periodoEv).orElse(new ReporteYear());
             reporteYear.setPeriodoEvaluacion(periodoEv);
-            reporteYear.setMediaPeriodo(calculateMean(puntajesGlobales));
-            reporteYear.setVarianzaPeriodo(calculateVariance(puntajesGlobales, media));
+            reporteYear.setMediaPeriodo(media);
+            reporteYear.setVarianzaPeriodo(varianza);
             reporteYear.setCoeficienteVariacion(calculateCoefficientOfVariation(media, varianza));
             reporteYearRepo.saveAndFlush(reporteYear);
         }
 
-        // --- Calcular y guardar ModuloYear ---
+        // --- Calcular y actualizar ModuloYear ---
         List<String> tiposModulo = moduloRepo.findDistinctTiposByPeriodoEvaluacion(periodoEv);
+
         for (String tipoModulo : tiposModulo) {
+            System.out.println("TipoModulo = " + tipoModulo);
             List<Integer> puntajesModulo = moduloRepo.findByTipoAndPeriodoEvaluacion(tipoModulo, periodoEv)
                     .stream()
                     .map(Modulo::getPuntajeModulo)
@@ -69,8 +66,11 @@ public class YearDataUploadService {
                 double varianzaModulo = calculateVariance(puntajesModulo, mediaModulo);
                 double coeficienteVariacionModulo = calculateCoefficientOfVariation(mediaModulo, varianzaModulo);
 
-                ModuloYear moduloYear = new ModuloYear();
-                moduloYear.setReporteYear(reporteYear);
+                ModuloYear moduloYear = moduloYearRepo.findByReporteYearAndTipoModulo(
+                        reporteYearRepo.findByPeriodoEvaluacion(periodoEv).orElse(null), tipoModulo
+                ).orElse(new ModuloYear());
+
+                moduloYear.setReporteYear(reporteYearRepo.findByPeriodoEvaluacion(periodoEv).orElse(null));
                 moduloYear.setTipoModulo(tipoModulo);
                 moduloYear.setMediaModuloYear(mediaModulo);
                 moduloYear.setVarianzaModuloYear(varianzaModulo);

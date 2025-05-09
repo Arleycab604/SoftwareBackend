@@ -35,7 +35,7 @@ public class CsvUploadService {
     }
 
     @Transactional
-    public String uploadExcel(MultipartFile file, int year, int periodo) throws Exception {
+    public String uploadCSV(MultipartFile file, int year, int periodo) throws Exception {
         String fileName = file.getOriginalFilename();
         if (fileName == null || fileName.isEmpty()) {
             throw new IllegalArgumentException("El archivo no tiene un nombre válido.");
@@ -149,10 +149,6 @@ public class CsvUploadService {
         yearDataUploadService.processYearData(year, periodo);
         passwordWriter.close();
         return "Archivo procesado exitosamente";
-    }
-
-    private String generateRandomPassword() {
-        return UUID.randomUUID().toString().substring(0, 15);
     }
 
     private static String normalize(String input) {
