@@ -5,19 +5,24 @@ import com.saberpro.backendsoftware.service.CsvUploadService;
 import com.saberpro.backendsoftware.service.ExcelUploadService;
 import com.saberpro.backendsoftware.service.HistoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/SaberPro/upload")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*") //Cambiar al dominio del frontend
 public class UploadController {
     private final CsvUploadService csvUploadService;
     private final ExcelUploadService excelUploadService;
+
+    @Autowired
+    private final HistoryService historyService;
+
 
     @PostMapping( consumes = "multipart/form-data")
     public ResponseEntity<String> uploadCsv(
@@ -37,7 +42,7 @@ public class UploadController {
         System.out.println("Token recibido: " + authHeader);
 
         //Maneja lo de subir el historico de que acciones se han realizado.
-         new HistoryService().registrarAccion(authHeader,
+        historyService.registrarAccion(authHeader,
                 _HistoricActions.Add_reporte_Saber_pro,
                 "El usuario subió un archivo: " + fileName +
                         " para el año: " + year + " y periodo: " + periodo);

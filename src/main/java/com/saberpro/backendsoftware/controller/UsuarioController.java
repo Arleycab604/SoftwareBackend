@@ -6,6 +6,7 @@ import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
 import com.saberpro.backendsoftware.service.HistoryService;
 import com.saberpro.backendsoftware.service.UsuarioService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +17,13 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/SaberPro/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final HistoryService historyService;
 
-    public UsuarioController(UsuarioService usuarioService, UsuarioRepositorio usuarioRepositorio) {
-        this.usuarioService = usuarioService;
-    }
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> getAllUsers() {
         System.out.println("Cargando usuarios...");
@@ -39,7 +39,7 @@ public class UsuarioController {
         boolean creado = usuarioService.crearUsuario(usuario);
 
         if (creado){
-            new HistoryService().registrarAccion(authHeader,
+            historyService.registrarAccion(authHeader,
                     _HistoricActions.Crear_usuario,
                     "Se ha creado un usuario: " + usuario.getNombreUsuario());
 
@@ -57,9 +57,9 @@ public class UsuarioController {
         boolean eliminado = usuarioService.eliminarUsuario(nombreUsuario);
 
         if (eliminado) {
-            new HistoryService().registrarAccion(authHeader,
-                    _HistoricActions.Eliminar_usuario,
-                    "Se ha eliminado el usuario: " + nombreUsuario);
+            historyService.registrarAccion(authHeader,
+                _HistoricActions.Eliminar_usuario,
+                "Se ha eliminado el usuario: " + nombreUsuario);
 
             return ResponseEntity.ok("Usuario eliminado exitosamente.");
         } else {
@@ -131,7 +131,7 @@ public class UsuarioController {
 
         boolean actualizado = usuarioService.cambiarRolUsuario(nombreUsuario, nuevoRol);
         if (actualizado) {
-            new HistoryService().registrarAccion(authHeader,
+            historyService.registrarAccion(authHeader,
                     _HistoricActions.Cambiar_rol_usuario,
                     "Se ha cambiado el rol del usuario: " + nombreUsuario + " a: " + nuevoRol);
             return ResponseEntity.ok("Rol actualizado exitosamente.");

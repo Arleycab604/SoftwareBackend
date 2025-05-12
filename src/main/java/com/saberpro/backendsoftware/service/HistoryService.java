@@ -7,22 +7,23 @@ import com.saberpro.backendsoftware.repository.HistoryRepositorio;
 import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
 import com.saberpro.backendsoftware.security.util.JwtUtil;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
+@Service
 @Getter
 @Setter
 @RequiredArgsConstructor
 public class HistoryService {
 
-    private static HistoryService instance;
-    private HistoryRepositorio historyRepositorio;
-    private UsuarioRepositorio usuarioRepositorio;
-
+    private final HistoryRepositorio historyRepositorio;
+    private final UsuarioRepositorio usuarioRepositorio;
 
     public void registrarAccion(String token, _HistoricActions accion, String detalles) {
         try {
