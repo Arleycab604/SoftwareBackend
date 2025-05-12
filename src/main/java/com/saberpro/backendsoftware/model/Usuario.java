@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class Usuario {
     private String tipoDeUsuario;
 
     private String correo;
-
+    private LocalDate fechaFinRol;
     @ManyToOne
     @JoinColumn(name = "sniesId", referencedColumnName = "sniesId")
     private Programa programa;

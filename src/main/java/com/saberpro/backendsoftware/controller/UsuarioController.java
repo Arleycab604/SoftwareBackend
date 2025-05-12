@@ -1,28 +1,28 @@
 package com.saberpro.backendsoftware.controller;
 
 import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
+import com.saberpro.backendsoftware.Utils._HistoricActions;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
+import com.saberpro.backendsoftware.service.HistoryService;
 import com.saberpro.backendsoftware.service.UsuarioService;
-import io.swagger.v3.oas.annotations.Parameter;
-import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/SaberPro/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
-    private final UsuarioRepositorio usuarioRepositorio;
 
     public UsuarioController(UsuarioService usuarioService, UsuarioRepositorio usuarioRepositorio) {
         this.usuarioService = usuarioService;
-        this.usuarioRepositorio = usuarioRepositorio;
     }
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> getAllUsers() {
@@ -33,39 +33,107 @@ public class UsuarioController {
 
     //Crear usuario
     @PostMapping("/register")
-    public Map<String, String> registrarUsuario(@RequestBody Usuario usuario) {
+    public ResponseEntity<String>  registrarUsuario(
+            @RequestBody Usuario usuario,//Nombre usuario y correo
+            @RequestHeader ("Authorization") String authHeader) {
         boolean creado = usuarioService.crearUsuario(usuario);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", creado ? "Usuario creado exitosamente." : "El nombre de usuario ya existe.");
-        return response;
+
+        if (creado){
+            HistoryService.getInstance().registrarAccion(authHeader,
+                    _HistoricActions.Crear_usuario,
+                    "Se ha creado un usuario: " + usuario.getNombreUsuario());
+
+            return ResponseEntity.ok( "Usuario creado exitosamente.");
+        }else{
+            return ResponseEntity.badRequest().body("El nombre de usuario ya existe.");
+        }
     }
+
     @DeleteMapping
-    public ResponseEntity<String> eliminarUsuario(@RequestParam String nombreUsuario) {
+    public ResponseEntity<String> eliminarUsuario(
+            @RequestParam String nombreUsuario,
+            @RequestHeader ("Authorization") String authHeader) {
+
         boolean eliminado = usuarioService.eliminarUsuario(nombreUsuario);
+
         if (eliminado) {
+            HistoryService.getInstance().registrarAccion(authHeader,
+                    _HistoricActions.Eliminar_usuario,
+                    "Se ha eliminado el usuario: " + nombreUsuario);
+
             return ResponseEntity.ok("Usuario eliminado exitosamente.");
         } else {
             return ResponseEntity.badRequest().body("No se pudo eliminar el usuario. Verifica el nombre del usuario.");
         }
     }
+
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Usuario usuario) {
+        //Enviar mensaje al correo del usuario sobre inicio de sesion
         System.out.println("Usuario datos: " + usuario);
+
         String token = usuarioService.login(usuario.getNombreUsuario(), usuario.getPassword());
         Map<String, String> response = new HashMap<>();
         response.put("token", token != null ? token : "Credenciales inválidas.");
         return response;
     }
+    @GetMapping("/recoverPassword")
+    public ResponseEntity<String> recuperarContrasena(@RequestParam String nombreUsuario) {
+        String codigo = usuarioService.enviarCorreoRecuperacion(nombreUsuario);
+        if (!codigo.isEmpty()) {
+            usuarioService.guardarCodigoRecuperacion(nombreUsuario, codigo); // método nuevo
+            return ResponseEntity.ok("Se ha enviado un código de recuperación al correo del usuario.");
+        } else {
+            return ResponseEntity.badRequest().body("Usuario no encontrado o error al enviar el correo.");
+        }
+    }
+    @GetMapping("/verifyCode")
+    public ResponseEntity<String> verificarCodigo(@RequestParam String nombreUsuario, @RequestParam String codigo) {
+        boolean valido = usuarioService.verificarCodigo(nombreUsuario, codigo);
+        if (valido) {
+            return ResponseEntity.ok("Código válido.");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Código inválido.");
+        }
+    }
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> cambiarContrasena(@RequestBody Map<String, String> datos) {
+        String usuario = datos.get("nombreUsuario");
+        String nueva = datos.get("nuevaContrasena");
 
+        if (usuario == null || nueva == null || nueva.length() < 6) {
+            return ResponseEntity.badRequest().body("Datos inválidos o contraseña muy corta.");
+        }
+
+        boolean actualizada = usuarioService.cambiarContrasena(usuario, nueva);
+        if (actualizada) {
+            return ResponseEntity.ok("Contraseña cambiada con éxito.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
+        }
+    }
     @GetMapping("/findByRole")
     public ResponseEntity<List<UsuarioDTO>> buscarUsuariosPorTipo(@RequestParam String tipoUsuario) {
         List<UsuarioDTO> usuarios = usuarioService.buscarPorTipoUsuario(tipoUsuario);
         return ResponseEntity.ok(usuarios);
     }
+    @GetMapping("/findByName")
+    public ResponseEntity<UsuarioDTO> buscarUsuarioPorNombre(@RequestParam String nombreUsuario) {
+        Optional<UsuarioDTO> usuario = usuarioService.buscarPorNombreUsuario(nombreUsuario);
+        return ResponseEntity.ok(usuario.orElse(null));
+    }
+
     @PutMapping("/assignRole")
-    public ResponseEntity<String> cambiarRol(@RequestParam String nombreUsuario, @RequestParam String nuevoRol) {
+    public ResponseEntity<String> cambiarRol(
+            @RequestParam String nombreUsuario,
+            @RequestParam String nuevoRol,
+            @RequestHeader ("Authorization") String authHeader) {
+
         boolean actualizado = usuarioService.cambiarRolUsuario(nombreUsuario, nuevoRol);
         if (actualizado) {
+            HistoryService.getInstance().registrarAccion(authHeader,
+                    _HistoricActions.Cambiar_rol_usuario,
+                    "Se ha cambiado el rol del usuario: " + nombreUsuario + " a: " + nuevoRol);
             return ResponseEntity.ok("Rol actualizado exitosamente.");
         } else {
             return ResponseEntity.badRequest().body("No se pudo actualizar el rol. Verifica el nombre del usuario.");

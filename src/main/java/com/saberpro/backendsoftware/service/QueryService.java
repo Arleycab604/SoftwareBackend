@@ -12,7 +12,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +21,6 @@ public class QueryService {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    private final EstudianteRepositorio estudianteRepo;
-    private final UsuarioRepositorio usuarioRepo;
-    private final ReporteRepositorio reporteRepo;
-    private final ProgramaRepositorio programaRepo;
-    private final ModuloRepositorio moduloRepo;
 
     @Transactional
     public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO) {

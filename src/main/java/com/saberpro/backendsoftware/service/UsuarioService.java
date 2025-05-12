@@ -5,6 +5,7 @@ import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
 import com.saberpro.backendsoftware.security.util.JwtUtil;
 import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import java.util.stream.Collectors;
@@ -24,11 +28,11 @@ public class UsuarioService {
     private final UsuarioRepositorio usuarioRepositorio;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final Map<String, String> codigosRecuperacion = new HashMap<>();
 
     public UsuarioService(UsuarioRepositorio usuarioRepositorio, JwtUtil jwtUtil) {
         this.usuarioRepositorio = usuarioRepositorio;
         this.jwtUtil = jwtUtil;
-        // Fuerza 12
         this.passwordEncoder = new BCryptPasswordEncoder(12);
     }
 
@@ -39,8 +43,7 @@ public class UsuarioService {
         }
 
         String plainPassword = generateRandomPassword();
-        String hashedPassword = passwordEncoder.encode(plainPassword);
-        usuario.setPassword(hashedPassword);
+        usuario.setPassword(passwordEncoder.encode(plainPassword));
 
         // Guardar en el archivo
         savePasswordToFile(usuario.getNombreUsuario(), plainPassword);
@@ -48,7 +51,17 @@ public class UsuarioService {
         usuarioRepositorio.save(usuario);
         return true;
     }
+    public void guardarCodigoRecuperacion(String nombreUsuario, String codigo) {
+        codigosRecuperacion.put(nombreUsuario, codigo);
+    }
 
+    public boolean verificarCodigo(String nombreUsuario, String codigoIngresado) {
+        if (codigoIngresado.equals(codigosRecuperacion.get(nombreUsuario))){
+            codigosRecuperacion.remove(nombreUsuario);
+            return true;
+        }
+        return false;
+    }
     @Transactional
     public boolean eliminarUsuario(String nombreUsuario) {
         Optional<Usuario> usuarioOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
@@ -95,6 +108,12 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
     @Transactional
+    public Optional<UsuarioDTO> buscarPorNombreUsuario(String nombre){
+        return usuarioRepositorio.findByNombreUsuario(nombre)
+                .map(this::convertirAUsuarioDTO);
+    }
+
+    @Transactional
     public List<UsuarioDTO> findAllUsuarios() {
         return usuarioRepositorio.findAll()
                 .stream()
@@ -107,6 +126,41 @@ public class UsuarioService {
                 usuario.getTipoDeUsuario(),
                 usuario.getCorreo()
         );
+    }
+    public String enviarCorreoRecuperacion(String nombreUsuario) {
+        Optional<Usuario> usuarioOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
+        if (usuarioOpt.isEmpty()) return "";
+
+        Usuario usuario = usuarioOpt.get();
+        String codigo = generarCodigoRecuperacion();
+
+        String asunto = "🔐 Recuperación de Contraseña - SaberPro";
+        String cuerpo = String.format("""
+            Estimado/a %s,
+
+            Has solicitado recuperar tu contraseña. Usa el siguiente código para continuar con el proceso:
+
+            👉 Código de recuperación: %s
+
+            Si no solicitaste esta recuperación, puedes ignorar este mensaje.
+
+            Atentamente,
+            El equipo de SaberPro.
+            """, usuario.getNombreUsuario(), codigo);
+
+        // Simulación de envío de correo
+        System.out.printf("Enviando correo a: %s%nAsunto: %s%nCuerpo:\n%s%n", usuario.getCorreo(), asunto, cuerpo);
+
+        // Aquí podrías guardar el código temporal en la base de datos o un cache para verificación posterior
+        return codigo;
+    }
+    private String generarCodigoRecuperacion() {
+        final String DIGITS = "0123456789";
+        final int LENGTH = 6;
+        SecureRandom random = new SecureRandom();
+        return IntStream.range(0, LENGTH)
+                .mapToObj(i -> String.valueOf(DIGITS.charAt(random.nextInt(DIGITS.length()))))
+                .collect(Collectors.joining());
     }
 
     private void savePasswordToFile(String nombreUsuario, String plainPassword) {
@@ -129,5 +183,27 @@ public class UsuarioService {
         return IntStream.range(0, PASSWORD_LENGTH)
                 .mapToObj(i -> String.valueOf(CHARACTERS.charAt(random.nextInt(CHARACTERS.length()))))
                 .collect(Collectors.joining());
+    }
+    @Transactional
+    public boolean cambiarContrasena(String nombreUsuario, String nuevaContrasena) {
+        Optional<Usuario> usuarioOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            String hashedPassword = passwordEncoder.encode(nuevaContrasena);
+            usuario.setPassword(hashedPassword);
+            usuarioRepositorio.save(usuario);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public void actualizarRolesExpirados() {
+        List<Usuario> expirados = usuarioRepositorio.findByFechaFinRolBefore(LocalDate.now());
+        for (Usuario usuario : expirados) {
+            usuario.setTipoDeUsuario("DOCENTE");
+            usuario.setFechaFinRol(null); // opcional: limpiar para no volver a procesar
+        }
+        usuarioRepositorio.saveAll(expirados);
     }
 }
