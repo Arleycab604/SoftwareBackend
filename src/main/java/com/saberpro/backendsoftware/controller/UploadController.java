@@ -37,7 +37,7 @@ public class UploadController {
         System.out.println("Token recibido: " + authHeader);
 
         //Maneja lo de subir el historico de que acciones se han realizado.
-        HistoryService.getInstance().registrarAccion(authHeader,
+         new HistoryService().registrarAccion(authHeader,
                 _HistoricActions.Add_reporte_Saber_pro,
                 "El usuario subió un archivo: " + fileName +
                         " para el año: " + year + " y periodo: " + periodo);

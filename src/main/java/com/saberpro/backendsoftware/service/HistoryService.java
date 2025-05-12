@@ -23,12 +23,6 @@ public class HistoryService {
     private HistoryRepositorio historyRepositorio;
     private UsuarioRepositorio usuarioRepositorio;
 
-    public static HistoryService getInstance() {
-        if (instance == null) {
-            instance = new HistoryService();
-        }
-        return instance;
-    }
 
     public void registrarAccion(String token, _HistoricActions accion, String detalles) {
         try {

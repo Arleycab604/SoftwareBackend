@@ -39,7 +39,7 @@ public class UsuarioController {
         boolean creado = usuarioService.crearUsuario(usuario);
 
         if (creado){
-            HistoryService.getInstance().registrarAccion(authHeader,
+            new HistoryService().registrarAccion(authHeader,
                     _HistoricActions.Crear_usuario,
                     "Se ha creado un usuario: " + usuario.getNombreUsuario());
 
@@ -57,7 +57,7 @@ public class UsuarioController {
         boolean eliminado = usuarioService.eliminarUsuario(nombreUsuario);
 
         if (eliminado) {
-            HistoryService.getInstance().registrarAccion(authHeader,
+            new HistoryService().registrarAccion(authHeader,
                     _HistoricActions.Eliminar_usuario,
                     "Se ha eliminado el usuario: " + nombreUsuario);
 
@@ -131,7 +131,7 @@ public class UsuarioController {
 
         boolean actualizado = usuarioService.cambiarRolUsuario(nombreUsuario, nuevoRol);
         if (actualizado) {
-            HistoryService.getInstance().registrarAccion(authHeader,
+            new HistoryService().registrarAccion(authHeader,
                     _HistoricActions.Cambiar_rol_usuario,
                     "Se ha cambiado el rol del usuario: " + nombreUsuario + " a: " + nuevoRol);
             return ResponseEntity.ok("Rol actualizado exitosamente.");
