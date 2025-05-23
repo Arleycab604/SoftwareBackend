@@ -1,4 +1,4 @@
-package com.saberpro.backendsoftware.service.utils;
+package com.saberpro.backendsoftware.Utils;
 
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepository;

@@ -1,4 +1,4 @@
-package com.saberpro.backendsoftware.service.Scheduled;
+package com.saberpro.backendsoftware.Utils.Scheduled;
 
 import com.saberpro.backendsoftware.service.UsuarioService;
 import org.springframework.scheduling.annotation.Scheduled;

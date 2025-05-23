@@ -5,7 +5,7 @@ import com.saberpro.backendsoftware.Utils._HistoricActions;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.service.HistoryService;
 import com.saberpro.backendsoftware.service.UsuarioService;
-import com.saberpro.backendsoftware.service.utils.CorreosService;
+import com.saberpro.backendsoftware.Utils.CorreosService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

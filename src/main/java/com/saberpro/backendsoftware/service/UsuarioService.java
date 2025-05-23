@@ -3,7 +3,7 @@ package com.saberpro.backendsoftware.service;
 import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepository;
-import com.saberpro.backendsoftware.security.util.JwtUtil;
+import com.saberpro.backendsoftware.security.JwtUtil;
 
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

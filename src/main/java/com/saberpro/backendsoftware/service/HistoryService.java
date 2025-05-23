@@ -5,7 +5,7 @@ import com.saberpro.backendsoftware.model.History;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.HistoryRepository;
 import com.saberpro.backendsoftware.repository.UsuarioRepository;
-import com.saberpro.backendsoftware.security.util.JwtUtil;
+import com.saberpro.backendsoftware.security.JwtUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
