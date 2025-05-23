@@ -3,9 +3,9 @@ package com.saberpro.backendsoftware.controller;
 import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
 import com.saberpro.backendsoftware.Utils._HistoricActions;
 import com.saberpro.backendsoftware.model.Usuario;
-import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
 import com.saberpro.backendsoftware.service.HistoryService;
 import com.saberpro.backendsoftware.service.UsuarioService;
+import com.saberpro.backendsoftware.service.utils.CorreosService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +23,7 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final HistoryService historyService;
+    private final CorreosService correosService;
 
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> getAllUsers() {
@@ -79,7 +80,7 @@ public class UsuarioController {
     }
     @GetMapping("/recoverPassword")
     public ResponseEntity<String> recuperarContrasena(@RequestParam String nombreUsuario) {
-        String codigo = usuarioService.enviarCorreoRecuperacion(nombreUsuario);
+        String codigo = correosService.enviarCorreoRecuperacion(nombreUsuario);
         if (!codigo.isEmpty()) {
             usuarioService.guardarCodigoRecuperacion(nombreUsuario, codigo); // método nuevo
             return ResponseEntity.ok("Se ha enviado un código de recuperación al correo del usuario.");

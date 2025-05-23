@@ -9,37 +9,40 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class InputQueryDTO {
+    //Propiedades de paginacion
+    private int page = 0;
+    private int size = 20;
 
+    //Propiedades para filtrar
     @JsonProperty("year")
     private Integer year;
     @JsonProperty("periodo")
     private Integer periodo;
-    @JsonProperty("nombreUsuario")
+
+    @JsonProperty("nombreUsuario") // nombre estudiante
     private String nombreUsuario;
-    @JsonProperty("nombrePrograma")
+
+    @JsonProperty("nombrePrograma") // Por ahora solo hay un programa :v
     private String nombrePrograma;
-    @JsonProperty("grupoDeReferencia")
-    private String grupoDeReferencia;
-    @JsonProperty("numeroRegistro")
-    private String numeroRegistro;
+
+    // Pos funciona
     @JsonProperty("puntajeGlobalMinimo")
     private Integer puntajeGlobalMinimo;
     @JsonProperty("puntajeGlobalMaximo")
     private Integer puntajeGlobalMaximo;
-    @JsonProperty("percentilGlobal")
-    private Integer percentilGlobal;
-    @JsonProperty("novedades")
-    private String novedades;
+
+    // Pray to god que funcione
     @JsonProperty("tipoModulo")
     private String tipoModulo;
+
     @JsonProperty("puntajeModuloMinimo")
     private Integer puntajeModuloMinimo;
     @JsonProperty("puntajeModuloMaximo")
     private Integer puntajeModuloMaximo;
+
+    // Dificil de implementar
     @JsonProperty("nivelDesempeno")
     private String nivelDesempeno;
-    @JsonProperty("percentilModulo")
-    private Integer percentilModulo;
 
     @Override
     public String toString() {
@@ -48,17 +51,12 @@ public class InputQueryDTO {
                 ", periodo=" + periodo +
                 ", nombreUsuario='" + nombreUsuario + '\'' +
                 ", nombrePrograma='" + nombrePrograma + '\'' +
-                ", grupoDeReferencia='" + grupoDeReferencia + '\'' +
-                ", numeroRegistro='" + numeroRegistro + '\'' +
                 ", puntajeGlobalMinimo=" + puntajeGlobalMinimo +
                 ", puntajeGlobalMaximo=" + puntajeGlobalMaximo +
-                ", percentilGlobal=" + percentilGlobal +
-                ", novedades='" + novedades + '\'' +
                 ", tipoModulo='" + tipoModulo + '\'' +
                 ", puntajeModuloMinimo=" + puntajeModuloMinimo +
                 ", puntajeModuloMaximo=" + puntajeModuloMaximo +
                 ", nivelDesempeno='" + nivelDesempeno + '\'' +
-                ", percentilModulo=" + percentilModulo +
                 '}';
     }
 }

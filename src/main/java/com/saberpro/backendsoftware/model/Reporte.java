@@ -1,17 +1,16 @@
 package com.saberpro.backendsoftware.model;
 
-import com.saberpro.backendsoftware.repository.EstudianteRepositorio;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 @NamedEntityGraph(
-        name = "Reporte.dtoGraph",
+        name = "Reporte.conRelaciones",
         attributeNodes = {
                 @NamedAttributeNode(value="estudiante", subgraph="estudianteSubgraph"),
                 @NamedAttributeNode("periodoEvaluacion"),
@@ -29,20 +28,23 @@ import java.util.List;
 public class Reporte {
     @Id
     private String numeroRegistro;
-    private String novedades;
-    @OneToOne
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estudiante_documento", referencedColumnName = "documento")
     private Estudiante estudiante;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "id_periodo_evaluacion", referencedColumnName = "idPeriodoEvaluacion")
+    @ManyToOne(fetch = FetchType.LAZY)
     private PeriodoEvaluacion periodoEvaluacion;
+
+    @OneToMany(mappedBy = "reporte", fetch = FetchType.LAZY)
+    private List<Modulo> modulos;
 
     private int puntajeGlobal;
     private int percentilGlobal;
+    private String novedades;
 
-    @OneToMany(mappedBy = "reporte")
-    private List<Modulo> modulos = new ArrayList<>();
 
     public Reporte() {
         numeroRegistro = "";

@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/SaberPro/reportes")
-
 @RequiredArgsConstructor
 public class QueryController {
 
@@ -21,9 +20,5 @@ public class QueryController {
     public ResponseEntity<List<ReporteDTO>> filtrarReportes(@RequestBody InputQueryDTO inputQueryDTO) {
         List<ReporteDTO> resultados = queryService.filtrarDatos(inputQueryDTO);
         return ResponseEntity.ok(resultados);
-
-
     }
-
-
 }

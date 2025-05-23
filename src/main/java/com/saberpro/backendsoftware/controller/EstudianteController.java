@@ -1,16 +1,16 @@
 package com.saberpro.backendsoftware.controller;
 
 import com.saberpro.backendsoftware.model.Estudiante;
-import com.saberpro.backendsoftware.repository.EstudianteRepositorio;
+import com.saberpro.backendsoftware.repository.EstudianteRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Optional;
 
 //Unused
 public class EstudianteController {
-    private final EstudianteRepositorio repositorio;
+    private final EstudianteRepository repositorio;
 
-    public EstudianteController(EstudianteRepositorio repositorio) {
+    public EstudianteController(EstudianteRepository repositorio) {
         this.repositorio = repositorio;
     }
 

@@ -23,11 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ExcelUploadService {
 
-    private final EstudianteRepositorio estudianteRepo;
-    private final ProgramaRepositorio programaRepo;
-    private final ReporteRepositorio reporteRepo;
-    private final ModuloRepositorio moduloRepo;
-    private final PeriodoEvaluacionRepositorio periodoEvRepo;
+    private final EstudianteRepository estudianteRepo;
+    private final ProgramaRepository programaRepo;
+    private final ReporteRepository reporteRepo;
+    private final ModuloRepository moduloRepo;
+    private final PeriodoEvaluacionRepository periodoEvRepo;
     private final YearDataUploadService yearDataUploadService;
     //private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 

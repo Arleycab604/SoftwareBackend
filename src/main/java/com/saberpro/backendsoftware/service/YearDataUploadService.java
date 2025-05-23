@@ -4,7 +4,6 @@ import com.saberpro.backendsoftware.model.*;
 import com.saberpro.backendsoftware.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.origin.SystemEnvironmentOrigin;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,11 +13,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class YearDataUploadService {
 
-    private final ReporteRepositorio reporteRepo;
-    private final ModuloRepositorio moduloRepo;
-    private final ReporteYearRepositorio reporteYearRepo;
-    private final ModuloYearRepositorio moduloYearRepo;
-    private final PeriodoEvaluacionRepositorio periodoEvRepo;
+    private final ReporteRepository reporteRepo;
+    private final ModuloRepository moduloRepo;
+    private final ReporteYearRepository reporteYearRepo;
+    private final ModuloYearRepository moduloYearRepo;
+    private final PeriodoEvaluacionRepository periodoEvRepo;
 
     @Transactional
     public void processYearData(int year, int periodo) {

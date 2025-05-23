@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 @Repository
-public interface ModuloRepositorio extends JpaRepository<Modulo, Long> {
+public interface ModuloRepository extends JpaRepository<Modulo, Long> {
 
     @Query("SELECT m FROM Modulo m WHERE m.reporte.numeroRegistro = :numeroRegistro")
     List<Modulo> findByReporteNumeroRegistro(@Param("numeroRegistro") String numeroRegistro);

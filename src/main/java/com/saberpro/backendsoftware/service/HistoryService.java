@@ -3,11 +3,10 @@ package com.saberpro.backendsoftware.service;
 import com.saberpro.backendsoftware.Utils._HistoricActions;
 import com.saberpro.backendsoftware.model.History;
 import com.saberpro.backendsoftware.model.Usuario;
-import com.saberpro.backendsoftware.repository.HistoryRepositorio;
-import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
+import com.saberpro.backendsoftware.repository.HistoryRepository;
+import com.saberpro.backendsoftware.repository.UsuarioRepository;
 import com.saberpro.backendsoftware.security.util.JwtUtil;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
@@ -22,8 +21,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class HistoryService {
 
-    private final HistoryRepositorio historyRepositorio;
-    private final UsuarioRepositorio usuarioRepositorio;
+    private final HistoryRepository historyRepository;
+    private final UsuarioRepository usuarioRepositorio;
 
     public void registrarAccion(String token, _HistoricActions accion, String detalles) {
         try {
@@ -51,6 +50,6 @@ public class HistoryService {
                 accion,
                 detalles
         );
-        historyRepositorio.save(history);
+        historyRepository.save(history);
     }
 }

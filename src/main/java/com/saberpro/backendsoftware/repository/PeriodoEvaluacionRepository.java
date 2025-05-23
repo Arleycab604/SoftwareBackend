@@ -8,6 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PeriodoEvaluacionRepositorio extends JpaRepository<PeriodoEvaluacion, Long> {
+public interface PeriodoEvaluacionRepository extends JpaRepository<PeriodoEvaluacion, Long> {
     Optional<PeriodoEvaluacion> findByYearAndPeriodo(int year, int periodo);
 }

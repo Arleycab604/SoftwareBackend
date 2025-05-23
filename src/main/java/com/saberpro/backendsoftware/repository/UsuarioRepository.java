@@ -1,17 +1,15 @@
 package com.saberpro.backendsoftware.repository;
 
 import com.saberpro.backendsoftware.model.Usuario;
-import org.springframework.boot.autoconfigure.data.ConditionalOnRepositoryType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 @Repository
-public interface UsuarioRepositorio extends JpaRepository<Usuario, String> {
+public interface UsuarioRepository extends JpaRepository<Usuario, String> {
    Optional<Usuario> findByNombreUsuario(String nombreUsuario);
     List<Usuario> findByFechaFinRolBefore(LocalDate fecha);
     List<Usuario> findByTipoDeUsuario(String tipoDeUsuario);

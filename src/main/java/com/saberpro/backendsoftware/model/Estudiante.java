@@ -22,9 +22,6 @@ public class Estudiante {
     @JsonBackReference
     private Programa programa;
 
-    @OneToOne(mappedBy = "estudiante")
-    private Reporte reporte;
-
     public Estudiante() {
         documento = 0L;
         tipoDocumento = "";

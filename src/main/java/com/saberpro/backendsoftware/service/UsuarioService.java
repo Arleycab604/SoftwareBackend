@@ -2,16 +2,17 @@ package com.saberpro.backendsoftware.service;
 
 import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
 import com.saberpro.backendsoftware.model.Usuario;
-import com.saberpro.backendsoftware.repository.UsuarioRepositorio;
+import com.saberpro.backendsoftware.repository.UsuarioRepository;
 import com.saberpro.backendsoftware.security.util.JwtUtil;
+
 import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -23,22 +24,22 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
-public class UsuarioService {
 
-    private final UsuarioRepositorio usuarioRepositorio;
+public class UsuarioService {
+    private final UsuarioRepository usuarioRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final Map<String, String> codigosRecuperacion = new HashMap<>();
 
-    public UsuarioService(UsuarioRepositorio usuarioRepositorio, JwtUtil jwtUtil) {
-        this.usuarioRepositorio = usuarioRepositorio;
+    public UsuarioService(UsuarioRepository usuarioRepository, JwtUtil jwtUtil) {
+        this.usuarioRepository = usuarioRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = new BCryptPasswordEncoder(12);
     }
 
     @Transactional
     public boolean crearUsuario(Usuario usuario) {
-        if (usuarioRepositorio.findByNombreUsuario(usuario.getNombreUsuario()).isPresent()) {
+        if (usuarioRepository.findByNombreUsuario(usuario.getNombreUsuario()).isPresent()) {
             return false;
         }
 
@@ -48,7 +49,7 @@ public class UsuarioService {
         // Guardar en el archivo
         savePasswordToFile(usuario.getNombreUsuario(), plainPassword);
 
-        usuarioRepositorio.save(usuario);
+        usuarioRepository.save(usuario);
         return true;
     }
     public void guardarCodigoRecuperacion(String nombreUsuario, String codigo) {
@@ -64,9 +65,9 @@ public class UsuarioService {
     }
     @Transactional
     public boolean eliminarUsuario(String nombreUsuario) {
-        Optional<Usuario> usuarioOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
         if (usuarioOpt.isPresent()) {
-            usuarioRepositorio.delete(usuarioOpt.get());
+            usuarioRepository.delete(usuarioOpt.get());
             return true;
         }
         return false;
@@ -74,7 +75,7 @@ public class UsuarioService {
 
     @Transactional
     public String login(String nombreUsuario, String password) {
-        Optional<Usuario> userOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> userOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
         if (userOpt.isPresent()) {
             Usuario usuario = userOpt.get();
             if (passwordEncoder.matches(password, usuario.getPassword())) {
@@ -85,37 +86,37 @@ public class UsuarioService {
     }
     @Transactional
     public boolean cambiarRolUsuario(String nombreUsuario, String nuevoRol) {
-        return usuarioRepositorio.findByNombreUsuario(nombreUsuario)
+        return usuarioRepository.findByNombreUsuario(nombreUsuario)
                 .map(usuario -> {
                     usuario.setTipoDeUsuario(nuevoRol);
-                    usuarioRepositorio.save(usuario);
+                    usuarioRepository.save(usuario);
                     return true;
                 })
                 .orElse(false);
     }
     @Transactional
     public List<UsuarioDTO> buscarUsuariosExcluyendoTipo(String tipoExcluido) {
-        return usuarioRepositorio.findByTipoDeUsuarioNot(tipoExcluido)
+        return usuarioRepository.findByTipoDeUsuarioNot(tipoExcluido)
                 .stream()
                 .map(this::convertirAUsuarioDTO)
                 .collect(Collectors.toList());
     }
     @Transactional
     public List<UsuarioDTO> buscarPorTipoUsuario(String tipoUsuario) {
-        return usuarioRepositorio.findByTipoDeUsuario(tipoUsuario)
+        return usuarioRepository.findByTipoDeUsuario(tipoUsuario)
                 .stream()
                 .map(this::convertirAUsuarioDTO)
                 .collect(Collectors.toList());
     }
     @Transactional
     public Optional<UsuarioDTO> buscarPorNombreUsuario(String nombre){
-        return usuarioRepositorio.findByNombreUsuario(nombre)
+        return usuarioRepository.findByNombreUsuario(nombre)
                 .map(this::convertirAUsuarioDTO);
     }
 
     @Transactional
     public List<UsuarioDTO> findAllUsuarios() {
-        return usuarioRepositorio.findAll()
+        return usuarioRepository.findAll()
                 .stream()
                 .map(this::convertirAUsuarioDTO)
                 .collect(Collectors.toList());
@@ -127,48 +128,14 @@ public class UsuarioService {
                 usuario.getCorreo()
         );
     }
-    public String enviarCorreoRecuperacion(String nombreUsuario) {
-        Optional<Usuario> usuarioOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
-        if (usuarioOpt.isEmpty()) return "";
 
-        Usuario usuario = usuarioOpt.get();
-        String codigo = generarCodigoRecuperacion();
-
-        String asunto = "🔐 Recuperación de Contraseña - SaberPro";
-        String cuerpo = String.format("""
-            Estimado/a %s,
-
-            Has solicitado recuperar tu contraseña. Usa el siguiente código para continuar con el proceso:
-
-            👉 Código de recuperación: %s
-
-            Si no solicitaste esta recuperación, puedes ignorar este mensaje.
-
-            Atentamente,
-            El equipo de SaberPro.
-            """, usuario.getNombreUsuario(), codigo);
-
-        // Simulación de envío de correo
-        System.out.printf("Enviando correo a: %s%nAsunto: %s%nCuerpo:\n%s%n", usuario.getCorreo(), asunto, cuerpo);
-
-        // Aquí podrías guardar el código temporal en la base de datos o un cache para verificación posterior
-        return codigo;
-    }
-    private String generarCodigoRecuperacion() {
-        final String DIGITS = "0123456789";
-        final int LENGTH = 6;
-        SecureRandom random = new SecureRandom();
-        return IntStream.range(0, LENGTH)
-                .mapToObj(i -> String.valueOf(DIGITS.charAt(random.nextInt(DIGITS.length()))))
-                .collect(Collectors.joining());
-    }
 
     private void savePasswordToFile(String nombreUsuario, String plainPassword) {
         try {
             String line = nombreUsuario + " : " + plainPassword + System.lineSeparator();
             Files.write(Paths.get("passwords.txt"), line.getBytes(), Files.exists(Paths.get("passwords.txt"))
-                    ? java.nio.file.StandardOpenOption.APPEND
-                    : java.nio.file.StandardOpenOption.CREATE);
+                    ? StandardOpenOption.APPEND
+                    : StandardOpenOption.CREATE);
         } catch (IOException e) {
             // Puedes registrar esto si usas algún logger
             System.err.println("Error guardando contraseña en archivo: " + e.getMessage());
@@ -186,12 +153,12 @@ public class UsuarioService {
     }
     @Transactional
     public boolean cambiarContrasena(String nombreUsuario, String nuevaContrasena) {
-        Optional<Usuario> usuarioOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             String hashedPassword = passwordEncoder.encode(nuevaContrasena);
             usuario.setPassword(hashedPassword);
-            usuarioRepositorio.save(usuario);
+            usuarioRepository.save(usuario);
             return true;
         }
         return false;
@@ -199,11 +166,11 @@ public class UsuarioService {
 
     @Transactional
     public void actualizarRolesExpirados() {
-        List<Usuario> expirados = usuarioRepositorio.findByFechaFinRolBefore(LocalDate.now());
+        List<Usuario> expirados = usuarioRepository.findByFechaFinRolBefore(LocalDate.now());
         for (Usuario usuario : expirados) {
             usuario.setTipoDeUsuario("DOCENTE");
             usuario.setFechaFinRol(null); // opcional: limpiar para no volver a procesar
         }
-        usuarioRepositorio.saveAll(expirados);
+        usuarioRepository.saveAll(expirados);
     }
 }
