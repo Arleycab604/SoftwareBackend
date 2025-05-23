@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.PersistenceContext;
 
-
 import jakarta.persistence.EntityManager;
-
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,9 +52,6 @@ public class QueryService {
         if (inputQueryDTO.getPuntajeGlobalMaximo() != null && inputQueryDTO.getPuntajeGlobalMaximo() > 0) {
             predicates.add(cb.lessThanOrEqualTo(reporte.get("puntajeGlobal"), inputQueryDTO.getPuntajeGlobalMaximo()));
         }
-        if (inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()) {
-            predicates.add(modulo.get("tipo").in(inputQueryDTO.getTipoModulo()));
-        }
         if (inputQueryDTO.getNivelDesempeno() != null && !inputQueryDTO.getNivelDesempeno().isEmpty()) {
             predicates.add(cb.equal(modulo.get("nivelDesempeno"), inputQueryDTO.getNivelDesempeno()));
         }
@@ -68,24 +62,24 @@ public class QueryService {
             predicates.add(cb.lessThanOrEqualTo(modulo.get("puntajeModulo"), inputQueryDTO.getPuntajeModuloMaximo()));
         }
 
-
         query.where(cb.and(predicates.toArray(new Predicate[0])));
-
-        // Usar distinct para evitar duplicados por join con modulos
         query.distinct(true);
 
         TypedQuery<Reporte> typedQuery = entityManager.createQuery(query);
-
-        // Aplicar EntityGraph definido en Reporte
         EntityGraph<?> entityGraph = entityManager.getEntityGraph("Reporte.conRelaciones");
         typedQuery.setHint("jakarta.persistence.fetchgraph", entityGraph);
 
         List<Reporte> reportes = typedQuery.getResultList();
 
-        // Construir DTOs a partir de los reportes y sus modulos
         List<ReporteDTO> resultados = new ArrayList<>();
         for (Reporte reporteEntity : reportes) {
             for (Modulo moduloEntity : reporteEntity.getModulos()) {
+                // Si se especifica un tipo de módulo, solo agregar si coincide
+                if (inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()) {
+                    if (!moduloEntity.getTipo().equals(inputQueryDTO.getTipoModulo())) {
+                        continue;
+                    }
+                }
                 ReporteDTO dto = convertToReporteDTO(reporteEntity, moduloEntity);
                 resultados.add(dto);
             }
@@ -93,7 +87,6 @@ public class QueryService {
 
         return resultados;
     }
-
 
     private ReporteDTO convertToReporteDTO(Reporte reporte, Modulo modulo) {
         return new ReporteDTO(

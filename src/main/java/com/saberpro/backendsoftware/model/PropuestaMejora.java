@@ -3,9 +3,6 @@ package com.saberpro.backendsoftware.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,8 +19,6 @@ public class PropuestaMejora {
     private Usuario usuarioProponente;
     private String moduloPropuesta;
     private String descripcion;
-    private String objetivo;
-    private String criterioDeAceptacion;
     private byte[] DocumentoDetalles; //Guia
 
     private LocalDateTime fechaCreacion;
