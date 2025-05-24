@@ -1,5 +1,6 @@
-package com.saberpro.backendsoftware.model;
+package com.saberpro.backendsoftware.model.usuarios;
 
+import com.saberpro.backendsoftware.model.Usuario;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

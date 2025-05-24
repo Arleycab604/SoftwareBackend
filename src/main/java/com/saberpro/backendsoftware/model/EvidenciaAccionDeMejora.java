@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.model;
 
+import com.saberpro.backendsoftware.model.usuarios.Docente;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,10 +1,10 @@
 package com.saberpro.backendsoftware.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.saberpro.backendsoftware.model.usuarios.Estudiante;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.context.properties.bind.Name;
 
 import java.util.ArrayList;
 import java.util.List;

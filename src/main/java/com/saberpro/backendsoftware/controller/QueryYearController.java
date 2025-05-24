@@ -1,8 +1,7 @@
 package com.saberpro.backendsoftware.controller;
 
-import com.saberpro.backendsoftware.Dtos.InputFilterYearDTO;
-import com.saberpro.backendsoftware.Dtos.ReporteYearDTO;
-import com.saberpro.backendsoftware.model.ModuloYear;
+import com.saberpro.backendsoftware.dto.InputFilterYearDTO;
+import com.saberpro.backendsoftware.dto.ReporteYearDTO;
 import com.saberpro.backendsoftware.service.QueryYearService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

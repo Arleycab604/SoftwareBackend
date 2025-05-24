@@ -1,6 +1,6 @@
 package com.saberpro.backendsoftware.service;
 
-import com.saberpro.backendsoftware.Utils._HistoricActions;
+import com.saberpro.backendsoftware.enums.AccionHistorico;
 import com.saberpro.backendsoftware.model.History;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.HistoryRepository;
@@ -24,7 +24,7 @@ public class HistoryService {
     private final HistoryRepository historyRepository;
     private final UsuarioRepository usuarioRepositorio;
 
-    public void registrarAccion(String token, _HistoricActions accion, String detalles) {
+    public void registrarAccion(String token, AccionHistorico accion, String detalles) {
         try {
             Map<String, Object> json = JwtUtil.getInstance().decodeToken(token);
 
@@ -42,10 +42,10 @@ public class HistoryService {
         }
     }
 
-    private void subirAccion(Usuario usuario, _HistoricActions accion, String detalles) {
+    private void subirAccion(Usuario usuario, AccionHistorico accion, String detalles) {
         History history = new History(
                 usuario,
-                usuario.getTipoDeUsuario(),
+                usuario.getTipoDeUsuario().toString(),
                 LocalDate.now(),
                 accion,
                 detalles

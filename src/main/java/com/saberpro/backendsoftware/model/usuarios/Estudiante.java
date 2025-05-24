@@ -1,6 +1,7 @@
-package com.saberpro.backendsoftware.model;
+package com.saberpro.backendsoftware.model.usuarios;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.saberpro.backendsoftware.model.Programa;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.model;
 
+import com.saberpro.backendsoftware.enums.TipoUsuario;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +22,7 @@ public class Usuario {
     private String password;
 
     @Column(nullable = false)
-    private String tipoDeUsuario;
+    private TipoUsuario tipoDeUsuario;
 
     private String correo;
     private LocalDate fechaFinRol;
@@ -32,10 +33,10 @@ public class Usuario {
     public Usuario() {
         nombreUsuario = "";
         password = "";
-        tipoDeUsuario = "";
+        tipoDeUsuario = TipoUsuario.DOCENTE;
         correo = "";
     }
-    public Usuario(String nombreUsuario, String password, String tipoDeUsuario, String correo) {
+    public Usuario(String nombreUsuario, String password, TipoUsuario tipoDeUsuario, String correo) {
         this.nombreUsuario = nombreUsuario;
         this.password = password;
         this.tipoDeUsuario = tipoDeUsuario;

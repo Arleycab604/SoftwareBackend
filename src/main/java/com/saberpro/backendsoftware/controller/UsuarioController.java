@@ -1,7 +1,8 @@
 package com.saberpro.backendsoftware.controller;
 
-import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
-import com.saberpro.backendsoftware.Utils._HistoricActions;
+import com.saberpro.backendsoftware.dto.UsuarioDTO;
+import com.saberpro.backendsoftware.enums.AccionHistorico;
+import com.saberpro.backendsoftware.enums.TipoUsuario;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.service.HistoryService;
 import com.saberpro.backendsoftware.service.UsuarioService;
@@ -41,7 +42,7 @@ public class UsuarioController {
 
         if (creado){
             historyService.registrarAccion(authHeader,
-                    _HistoricActions.Crear_usuario,
+                    AccionHistorico.Crear_usuario,
                     "Se ha creado un usuario: " + usuario.getNombreUsuario());
 
             return ResponseEntity.ok( "Usuario creado exitosamente.");
@@ -59,7 +60,7 @@ public class UsuarioController {
 
         if (eliminado) {
             historyService.registrarAccion(authHeader,
-                _HistoricActions.Eliminar_usuario,
+                AccionHistorico.Eliminar_usuario,
                 "Se ha eliminado el usuario: " + nombreUsuario);
 
             return ResponseEntity.ok("Usuario eliminado exitosamente.");
@@ -127,13 +128,13 @@ public class UsuarioController {
     @PutMapping("/assignRole")
     public ResponseEntity<String> cambiarRol(
             @RequestParam String nombreUsuario,
-            @RequestParam String nuevoRol,
+            @RequestParam TipoUsuario nuevoRol,
             @RequestHeader ("Authorization") String authHeader) {
 
         boolean actualizado = usuarioService.cambiarRolUsuario(nombreUsuario, nuevoRol);
         if (actualizado) {
             historyService.registrarAccion(authHeader,
-                    _HistoricActions.Cambiar_rol_usuario,
+                    AccionHistorico.Cambiar_rol_usuario,
                     "Se ha cambiado el rol del usuario: " + nombreUsuario + " a: " + nuevoRol);
             return ResponseEntity.ok("Rol actualizado exitosamente.");
         } else {

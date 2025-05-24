@@ -5,6 +5,7 @@ import java.text.Normalizer;
 import java.util.*;
 
 import com.saberpro.backendsoftware.model.*;
+import com.saberpro.backendsoftware.model.usuarios.Estudiante;
 import com.saberpro.backendsoftware.repository.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;

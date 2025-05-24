@@ -1,6 +1,6 @@
 package com.saberpro.backendsoftware.repository;
 
-import com.saberpro.backendsoftware.model.Estudiante;
+import com.saberpro.backendsoftware.model.usuarios.Estudiante;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,6 +1,7 @@
 package com.saberpro.backendsoftware.service;
 
-import com.saberpro.backendsoftware.Dtos.UsuarioDTO;
+import com.saberpro.backendsoftware.dto.UsuarioDTO;
+import com.saberpro.backendsoftware.enums.TipoUsuario;
 import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepository;
 import com.saberpro.backendsoftware.security.JwtUtil;
@@ -79,13 +80,13 @@ public class UsuarioService {
         if (userOpt.isPresent()) {
             Usuario usuario = userOpt.get();
             if (passwordEncoder.matches(password, usuario.getPassword())) {
-                return jwtUtil.generateToken(nombreUsuario, usuario.getTipoDeUsuario());
+                return jwtUtil.generateToken(nombreUsuario, usuario.getTipoDeUsuario().toString());
             }
         }
         return null;
     }
     @Transactional
-    public boolean cambiarRolUsuario(String nombreUsuario, String nuevoRol) {
+    public boolean cambiarRolUsuario(String nombreUsuario, TipoUsuario nuevoRol) {
         return usuarioRepository.findByNombreUsuario(nombreUsuario)
                 .map(usuario -> {
                     usuario.setTipoDeUsuario(nuevoRol);
@@ -124,7 +125,7 @@ public class UsuarioService {
     private UsuarioDTO convertirAUsuarioDTO(Usuario usuario) {
         return new UsuarioDTO(
                 usuario.getNombreUsuario(),
-                usuario.getTipoDeUsuario(),
+                usuario.getTipoDeUsuario().toString(),
                 usuario.getCorreo()
         );
     }

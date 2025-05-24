@@ -1,7 +1,7 @@
 package com.saberpro.backendsoftware.controller;
 
-import com.saberpro.backendsoftware.Dtos.InputQueryDTO;
-import com.saberpro.backendsoftware.Dtos.ReporteDTO;
+import com.saberpro.backendsoftware.dto.InputQueryDTO;
+import com.saberpro.backendsoftware.dto.ReporteDTO;
 import com.saberpro.backendsoftware.service.QueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,8 +1,9 @@
 package com.saberpro.backendsoftware.service;
 
-import com.saberpro.backendsoftware.Dtos.InputQueryDTO;
-import com.saberpro.backendsoftware.Dtos.ReporteDTO;
+import com.saberpro.backendsoftware.dto.InputQueryDTO;
+import com.saberpro.backendsoftware.dto.ReporteDTO;
 import com.saberpro.backendsoftware.model.*;
+import com.saberpro.backendsoftware.model.usuarios.Estudiante;
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;

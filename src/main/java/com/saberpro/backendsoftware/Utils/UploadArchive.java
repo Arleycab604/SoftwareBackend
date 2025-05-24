@@ -7,12 +7,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 
-public class UploadArchiveToSupabase {
-    private static UploadArchiveToSupabase uploadArchiveToSupabase;
+public class UploadArchive {
+    private static UploadArchive uploadArchiveToSupabase;
 
-    public static UploadArchiveToSupabase getInstance() {
+    public static UploadArchive getInstance() {
         if (uploadArchiveToSupabase == null) {
-            uploadArchiveToSupabase = new UploadArchiveToSupabase();
+            uploadArchiveToSupabase = new UploadArchive();
         }
         return uploadArchiveToSupabase;
     }
@@ -25,21 +25,17 @@ public class UploadArchiveToSupabase {
      * Sube un archivo local a Supabase usando la API S3
      * @param localFilePath Ruta local del archivo
      */
-    public void uploadFile(String localFilePath) throws IOException {
+    public String uploadFile(String localFilePath) throws IOException {
         File file = new File(localFilePath);
-        if (!file.exists()) {
-            throw new IOException("El archivo no existe: " + localFilePath);
-        }
+        if (!file.exists()) throw new IOException("El archivo no existe: " + localFilePath);
 
         byte[] fileBytes = Files.readAllBytes(file.toPath());
-
-        // Construye URL estilo S3: <base>/<bucket>/<path>
         String uploadUrl = SUPABASE_URL + "/" + BUCKET_NAME + "/" + file.getName();
+
         URL url = new URL(uploadUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("PUT"); // PUT para subir o reemplazar
+        connection.setRequestMethod("PUT");
         connection.setDoOutput(true);
-
         connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_SECRET_KEY);
         connection.setRequestProperty("Content-Type", "application/octet-stream");
 
@@ -48,12 +44,12 @@ public class UploadArchiveToSupabase {
         }
 
         int responseCode = connection.getResponseCode();
-        System.out.println("Código de respuesta: " + responseCode);
-
         if (responseCode >= 200 && responseCode < 300) {
             System.out.println("Archivo subido correctamente a Supabase S3.");
+            return uploadUrl; // ← Aquí retornamos la URL del archivo
         } else {
-            System.err.println("Error al subir archivo: " + connection.getResponseMessage());
+            throw new IOException("Error al subir archivo: " + connection.getResponseMessage());
         }
     }
+
 }

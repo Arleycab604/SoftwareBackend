@@ -1,6 +1,6 @@
 package com.saberpro.backendsoftware.controller;
 
-import com.saberpro.backendsoftware.model.Estudiante;
+import com.saberpro.backendsoftware.model.usuarios.Estudiante;
 import com.saberpro.backendsoftware.repository.EstudianteRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,6 +1,6 @@
-package com.saberpro.backendsoftware.Utils;
+package com.saberpro.backendsoftware.enums;
 
-public enum _HistoricActions {
+public enum AccionHistorico {
     Crear_usuario,
     Cambiar_rol_usuario,
     Eliminar_usuario,

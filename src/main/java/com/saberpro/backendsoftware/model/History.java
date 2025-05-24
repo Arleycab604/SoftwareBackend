@@ -1,6 +1,6 @@
 package com.saberpro.backendsoftware.model;
 
-import com.saberpro.backendsoftware.Utils._HistoricActions;
+import com.saberpro.backendsoftware.enums.AccionHistorico;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +35,7 @@ public class History {
     public History(Usuario usuario,
                    String rolHistorico,
                    LocalDate fechaAccion,
-                   _HistoricActions accion,
+                   AccionHistorico accion,
                    String detalles) {
 
         this.usuario = usuario;

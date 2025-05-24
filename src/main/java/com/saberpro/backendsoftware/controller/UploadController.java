@@ -1,6 +1,6 @@
 package com.saberpro.backendsoftware.controller;
 
-import com.saberpro.backendsoftware.Utils._HistoricActions;
+import com.saberpro.backendsoftware.enums.AccionHistorico;
 import com.saberpro.backendsoftware.service.CsvUploadService;
 import com.saberpro.backendsoftware.service.ExcelUploadService;
 import com.saberpro.backendsoftware.service.HistoryService;
@@ -43,7 +43,7 @@ public class UploadController {
 
         //Maneja lo de subir el historico de que acciones se han realizado.
         historyService.registrarAccion(authHeader,
-                _HistoricActions.Add_reporte_Saber_pro,
+                AccionHistorico.Add_reporte_Saber_pro,
                 "El usuario subió un archivo: " + fileName +
                         " para el año: " + year + " y periodo: " + periodo);
 

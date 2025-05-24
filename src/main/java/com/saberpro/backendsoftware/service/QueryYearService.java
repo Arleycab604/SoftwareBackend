@@ -1,7 +1,7 @@
 package com.saberpro.backendsoftware.service;
 
-import com.saberpro.backendsoftware.Dtos.InputFilterYearDTO;
-import com.saberpro.backendsoftware.Dtos.ReporteYearDTO;
+import com.saberpro.backendsoftware.dto.InputFilterYearDTO;
+import com.saberpro.backendsoftware.dto.ReporteYearDTO;
 import com.saberpro.backendsoftware.model.ModuloYear;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

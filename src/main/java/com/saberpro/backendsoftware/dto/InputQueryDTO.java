@@ -1,4 +1,4 @@
-package com.saberpro.backendsoftware.Dtos;
+package com.saberpro.backendsoftware.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
