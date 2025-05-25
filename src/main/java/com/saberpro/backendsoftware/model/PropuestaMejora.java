@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.model;
 
+import com.saberpro.backendsoftware.enums.ModulosSaberPro;
 import com.saberpro.backendsoftware.enums.PropuestaMejoraState;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,7 +27,9 @@ public class PropuestaMejora {
     private String descripcion;
     @ElementCollection
     private List<String> urlsDocumentoDetalles = new ArrayList<>();
-    private String moduloPropuesta;
+
+    @Enumerated(EnumType.STRING)
+    private ModulosSaberPro moduloPropuesta;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaLimiteEntrega;
 
@@ -35,11 +38,14 @@ public class PropuestaMejora {
         this.usuarioProponente = null;
         this.estadoPropuesta = PropuestaMejoraState.PENDIENTE;
         this.descripcion = "";
-        this.moduloPropuesta = "";
+        this.moduloPropuesta = ModulosSaberPro.COMPETENCIAS_CIUDADANAS;
         this.fechaCreacion = LocalDateTime.now();
         this.fechaLimiteEntrega = LocalDateTime.now();
     }
-    public PropuestaMejora(String nombrePropuesta, Usuario usuarioProponente, PropuestaMejoraState estadoPropuesta, String descripcion, String moduloPropuesta, LocalDateTime fechaCreacion, LocalDateTime fechaLimiteEntrega) {
+    public PropuestaMejora(String nombrePropuesta,
+                           Usuario usuarioProponente,
+                           PropuestaMejoraState estadoPropuesta,
+                           String descripcion, ModulosSaberPro moduloPropuesta, LocalDateTime fechaCreacion, LocalDateTime fechaLimiteEntrega) {
         this.nombrePropuesta = nombrePropuesta;
         this.usuarioProponente = usuarioProponente;
         this.estadoPropuesta = estadoPropuesta;

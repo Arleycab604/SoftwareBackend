@@ -2,6 +2,7 @@ package com.saberpro.backendsoftware.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -29,17 +31,33 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = getJwtFromRequest(request);
 
-        if (token != null && jwtUtil.validateToken(token)) {
-            // Aquí se puede obtener el nombre de usuario desde el token y autenticarlo
-            String username = jwtUtil.getUsernameFromToken(token);
-            // Autenticamos el usuario
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            if (token != null && jwtUtil.validateToken(token)) {
+                String username = jwtUtil.extractUsername(token);
+
+                // Aquí asignamos un rol para que pase la autorización
+                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("DECANO"),
+                        new SimpleGrantedAuthority("ESTUDIANTE"),
+                        new SimpleGrantedAuthority("DOCENTE"),
+                        new SimpleGrantedAuthority("DIRECTOR_DE_PROGRAMA"),
+                        new SimpleGrantedAuthority("DIRECTOR_DE_ESCUELA"),
+                        new SimpleGrantedAuthority("COORDINADOR_SABER_PRO"),
+                        new SimpleGrantedAuthority("OFICINA_DE_ACREDITACION")
+                        );
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(username, null, authorities);
+
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (Exception e) {
+            System.out.println("JWT Filter Error: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
+
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");

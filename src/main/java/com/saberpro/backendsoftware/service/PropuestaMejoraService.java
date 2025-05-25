@@ -1,7 +1,9 @@
 package com.saberpro.backendsoftware.service;
 
+import com.saberpro.backendsoftware.Utils.SupabaseProperties;
 import com.saberpro.backendsoftware.Utils.UploadArchive;
 import com.saberpro.backendsoftware.dto.PropuestaMejoraDTO;
+import com.saberpro.backendsoftware.enums.ModulosSaberPro;
 import com.saberpro.backendsoftware.enums.TipoUsuario;
 import com.saberpro.backendsoftware.model.PropuestaMejora;
 import com.saberpro.backendsoftware.enums.PropuestaMejoraState;
@@ -24,11 +26,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PropuestaMejoraService {
+    private final SupabaseProperties supabaseProperties;
     private final UsuarioRepository usuarioRepo;
     private final UserAceptedProposeRepository userAceptedRepo;
     private final PropuestaMejoraRepository propuestaRepo;
 
-    private final UploadArchive uploadService = UploadArchive.getInstance();
+    private final UploadArchive uploadService;
 
 
     public PropuestaMejora obtenerPorId(Long id) {
@@ -43,8 +46,8 @@ public class PropuestaMejoraService {
         return propuestaRepo.findByEstadoPropuesta(estado);
     }
 
-    public List<PropuestaMejora> listarPorModulo(String modulo) {
-        return propuestaRepo.findByModuloPropuestaIgnoreCase(modulo);
+    public List<PropuestaMejora> listarPorModulo(ModulosSaberPro modulo) {
+        return propuestaRepo.findByModuloPropuesta(modulo);
     }
 
     public List<PropuestaMejora> listarPorUsuario(String nombreUsuario) {
@@ -62,7 +65,7 @@ public class PropuestaMejoraService {
         List<String> urls = new ArrayList<>();
 
         for (String path : localFilePaths) {
-            String url = uploadService.uploadFile(path);
+            String url = uploadService.uploadFile(path,supabaseProperties.getBucketPropuestas());
             urls.add(url);
         }
 
@@ -122,7 +125,6 @@ public class PropuestaMejoraService {
 
         propuestaRepo.save(propuesta);
     }
-
     public PropuestaMejora modificarPropuesta(Long id, PropuestaMejoraDTO dto) {
         PropuestaMejora propuesta = propuestaRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Propuesta no encontrada"));
@@ -132,29 +134,33 @@ public class PropuestaMejoraService {
         propuesta.setModuloPropuesta(dto.getModuloPropuesta());
         propuesta.setFechaLimiteEntrega(LocalDateTime.parse(dto.getFechaLimiteEntrega()));
 
-        // Manejo de archivos
-        List<String> urlsAntiguas = new ArrayList<>(propuesta.getUrlsDocumentoDetalles());
-        List<String> urlsAConservar = dto.getUrlsDocumentoDetalles() != null ? dto.getUrlsDocumentoDetalles() : new ArrayList<>();
-
-        // Eliminar archivos que ya no están
-        for (String url : urlsAntiguas) {
-            if (!urlsAConservar.contains(url)) {
-                uploadService.eliminarArchivoDeSupabase(url);
+        // Si no hay URLs enviadas, borrar todas las antiguas
+        if (dto.getUrlsDocumentoDetalles() == null || dto.getUrlsDocumentoDetalles().isEmpty()) {
+            for (String url : propuesta.getUrlsDocumentoDetalles()) {
+                uploadService.eliminarArchivoDeSupabase(url,supabaseProperties.getBucketPropuestas());
             }
+            propuesta.setUrlsDocumentoDetalles(new ArrayList<>());
+        } else {
+            // Conservar solo las URLs indicadas (caso si en futuro se añada UI para eso)
+            List<String> urlsAntiguas = new ArrayList<>(propuesta.getUrlsDocumentoDetalles());
+            List<String> urlsAConservar = dto.getUrlsDocumentoDetalles();
+
+            for (String url : urlsAntiguas) {
+                if (!urlsAConservar.contains(url)) {
+                    uploadService.eliminarArchivoDeSupabase(url,supabaseProperties.getBucketPropuestas());
+                }
+            }
+            propuesta.setUrlsDocumentoDetalles(new ArrayList<>(urlsAConservar));
         }
 
-        propuesta.setUrlsDocumentoDetalles(new ArrayList<>(urlsAConservar));
-
         // Subir nuevos archivos
-        if (dto.getArchivos() != null) {
+        if (dto.getArchivos() != null && dto.getArchivos().length > 0) {
             for (MultipartFile archivo : dto.getArchivos()) {
                 try {
                     File temp = File.createTempFile("temp-", archivo.getOriginalFilename());
                     archivo.transferTo(temp);
-
-                    String nuevaUrl = UploadArchive.getInstance().uploadFile(temp.getAbsolutePath());
+                    String nuevaUrl = uploadService.uploadFile(temp.getAbsolutePath(),supabaseProperties.getBucketPropuestas());
                     propuesta.getUrlsDocumentoDetalles().add(nuevaUrl);
-
                     temp.delete();
                 } catch (IOException e) {
                     throw new RuntimeException("Error al subir archivo: " + archivo.getOriginalFilename(), e);

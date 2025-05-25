@@ -18,6 +18,7 @@ public class Docente {
     @JoinColumn(name ="nombreDocente" , referencedColumnName = "nombreUsuario")
     @OneToOne(cascade = CascadeType.ALL)
     private Usuario usuario;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ModulosSaberPro moduloMaterias;

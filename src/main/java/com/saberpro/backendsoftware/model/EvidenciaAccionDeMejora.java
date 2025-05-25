@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,10 +19,10 @@ public class EvidenciaAccionDeMejora {
     @ManyToOne
     @JoinColumn(name = "idDocente")
     private Docente docente;
-
+    @ElementCollection
+    private List<String> urlsEvidencias = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "idPropuestaMejora")
     private PropuestaMejora propuestaMejora;
     private LocalDateTime fechaEntrega;
-    private byte[] evidencia;
 }

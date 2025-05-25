@@ -1,10 +1,13 @@
 package com.saberpro.backendsoftware.controller;
 
+import com.saberpro.backendsoftware.Utils.CorreosService;
 import com.saberpro.backendsoftware.Utils.UploadArchive;
 import com.saberpro.backendsoftware.dto.PropuestaMejoraDTO;
+import com.saberpro.backendsoftware.enums.ModulosSaberPro;
 import com.saberpro.backendsoftware.enums.PropuestaMejoraState;
 import com.saberpro.backendsoftware.model.PropuestaMejora;
 import com.saberpro.backendsoftware.model.Usuario;
+import com.saberpro.backendsoftware.security.JwtUtil;
 import com.saberpro.backendsoftware.repository.UsuarioRepository;
 import com.saberpro.backendsoftware.service.PropuestaMejoraService;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/propuestas")
+@RequestMapping("/SaberPro/propuestas")
 @RequiredArgsConstructor
 public class PropuestaMejoraController {
 
     private final PropuestaMejoraService propuestaService;
     private final UsuarioRepository usuarioRepo;
+    private final UploadArchive uploadArchive;
+    private final CorreosService correosService;
+    private final JwtUtil jwtService;
 
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPropuestaPorId(@PathVariable Long id) {
@@ -42,7 +48,7 @@ public class PropuestaMejoraController {
     }
 
     @GetMapping("/modulo/{modulo}")
-    public ResponseEntity<?> listarPorModulo(@PathVariable String modulo) {
+    public ResponseEntity<?> listarPorModulo(@PathVariable ModulosSaberPro modulo) {
         return ResponseEntity.ok(propuestaService.listarPorModulo(modulo));
     }
 
@@ -51,12 +57,14 @@ public class PropuestaMejoraController {
         return ResponseEntity.ok(propuestaService.listarPorUsuario(nombreUsuario));
     }
 
+    //Enviar correo de creado a comite de programa
     @PostMapping("/crear")
     public ResponseEntity<?> crearPropuesta(
-            @ModelAttribute PropuestaMejoraDTO request) throws IOException {
+            @ModelAttribute PropuestaMejoraDTO request,
+            @RequestHeader("Authorization") String authHeader) throws IOException {
 
         // Buscar usuario proponente
-        Usuario usuario = usuarioRepo.findById(String.valueOf(request.getUsuarioProponente()))
+        Usuario usuario = usuarioRepo.findByNombreUsuario(String.valueOf(request.getUsuarioProponente()))
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         List<String> rutasTemporales = new ArrayList<>();
@@ -78,10 +86,22 @@ public class PropuestaMejoraController {
 
         PropuestaMejora creada = propuestaService.crearPropuesta(propuesta, rutasTemporales);
 
+        if(creada != null){
+            System.out.println("Propuesta creada y enviando correo a comite de programa");
+            correosService.notificarCreacionPropuesta(creada.getNombrePropuesta());
+        }
+
+        // Eliminar archivos temporales
+        for (String ruta : rutasTemporales) {
+            File tempFile = new File(ruta);
+            if (tempFile.exists()) {
+                tempFile.delete();
+            }
+        }
         return ResponseEntity.ok(creada);
     }
 
-
+    //enviar correo de modificado a comite de programa
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PropuestaMejora> modificarPropuesta(
             @PathVariable Long id,
@@ -90,10 +110,12 @@ public class PropuestaMejoraController {
         PropuestaMejora actualizada = propuestaService.modificarPropuesta(id, dto);
         return ResponseEntity.ok(actualizada);
     }
+
+
     @GetMapping("/documento/download/{fileName}")
     public ResponseEntity<byte[]> descargarDesdeSupabase(@PathVariable String fileName) {
         try {
-            byte[] archivo = UploadArchive.getInstance().downloadFile(fileName);
+            byte[] archivo = uploadArchive.downloadFile(fileName, uploadArchive.getBucketPropuestas());
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -105,16 +127,30 @@ public class PropuestaMejoraController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
     @PostMapping("/{id}/aceptar")
-    public ResponseEntity<?> aceptarPropuesta(@PathVariable Long id) {
-        PropuestaMejora actualizada = propuestaService.cambiarEstado(id, PropuestaMejoraState.ACEPTADA);
-        return ResponseEntity.ok(actualizada);
+    public ResponseEntity<?> aceptarPropuesta(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+        String nombreUsuario = extraerNombreUsuario(authHeader);
+        propuestaService.responderPropuesta(id, nombreUsuario, true);
+
+        return ResponseEntity.ok("Propuesta aceptada por " + nombreUsuario);
     }
 
     @PostMapping("/{id}/rechazar")
-    public ResponseEntity<?> rechazarPropuesta(@PathVariable Long id) {
-        PropuestaMejora actualizada = propuestaService.cambiarEstado(id, PropuestaMejoraState.RECHAZADA);
-        return ResponseEntity.ok(actualizada);
+    public ResponseEntity<?> rechazarPropuesta(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+        String nombreUsuario = extraerNombreUsuario(authHeader);
+        propuestaService.responderPropuesta(id, nombreUsuario, false);
+
+        return ResponseEntity.ok("Propuesta rechazada por " + nombreUsuario);
+    }
+
+    private String extraerNombreUsuario(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token de autorización inválido");
+        }
+        String token = authHeader.substring(7); // Remove "Bearer "
+        return jwtService.extractUsername(token); // Método típico en servicio de JWT
     }
 
     @PostMapping("/{id}/requiere-cambios")

@@ -23,10 +23,11 @@ public class HistoryService {
 
     private final HistoryRepository historyRepository;
     private final UsuarioRepository usuarioRepositorio;
+    private final JwtUtil jwtUtil;
 
     public void registrarAccion(String token, AccionHistorico accion, String detalles) {
         try {
-            Map<String, Object> json = JwtUtil.getInstance().decodeToken(token);
+            Map<String, Object> json = jwtUtil.decodeToken(token);
 
             String nombre = (String) json.get("sub");
 

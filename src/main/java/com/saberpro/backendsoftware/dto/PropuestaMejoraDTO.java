@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.dto;
 
+import com.saberpro.backendsoftware.enums.ModulosSaberPro;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,7 +9,7 @@ import java.util.List;
 @Data
 public class PropuestaMejoraDTO {
     private String nombrePropuesta;
-    private String moduloPropuesta;
+    private ModulosSaberPro moduloPropuesta;
     private String descripcion;
     private String usuarioProponente;
     private String fechaLimiteEntrega;

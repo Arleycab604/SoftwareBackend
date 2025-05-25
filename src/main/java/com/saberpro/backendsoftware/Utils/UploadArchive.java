@@ -1,89 +1,105 @@
 package com.saberpro.backendsoftware.Utils;
 
-import java.io.File;
+import org.springframework.stereotype.Component;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.*;
+
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
+@Component
 public class UploadArchive {
-    private static UploadArchive uploadArchiveToSupabase;
 
-    public static UploadArchive getInstance() {
-        if (uploadArchiveToSupabase == null) {
-            uploadArchiveToSupabase = new UploadArchive();
-        }
-        return uploadArchiveToSupabase;
+    private final SupabaseProperties supabaseProperties;
+    private final S3Client s3Client;
+    private static final Region REGION = Region.US_EAST_2;
+
+    public UploadArchive(SupabaseProperties supabaseProperties) {
+        this.supabaseProperties = supabaseProperties;
+
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(
+                supabaseProperties.getAccessKey(),
+                supabaseProperties.getSecretKey()
+        );
+
+        this.s3Client = S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .endpointOverride(URI.create(supabaseProperties.getUrl()))
+                .region(REGION)
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .serviceConfiguration(S3Configuration.builder()
+                        .pathStyleAccessEnabled(true)
+                        .build())
+                .build();
     }
 
-    private static final String SUPABASE_URL = System.getenv("SUPABASE_URL"); // e.g., https://hubzlyyshzyfcukabszn.supabase.co/storage/v1/s3
-    private static final String SUPABASE_SECRET_KEY = System.getenv("SUPABASE_SECRET_KEY");
-    private static final String BUCKET_NAME = "propuestas-de-mejora";
-
-    /**
-     * Sube un archivo local a Supabase usando la API S3
-     * @param localFilePath Ruta local del archivo
-     */
-    public String uploadFile(String localFilePath) throws IOException {
-        File file = new File(localFilePath);
-        if (!file.exists()) throw new IOException("El archivo no existe: " + localFilePath);
-
-        byte[] fileBytes = Files.readAllBytes(file.toPath());
-        String uploadUrl = SUPABASE_URL + "/" + BUCKET_NAME + "/" + file.getName();
-
-        URL url = new URL(uploadUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("PUT");
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_SECRET_KEY);
-        connection.setRequestProperty("Content-Type", "application/octet-stream");
-
-        try (OutputStream os = connection.getOutputStream()) {
-            os.write(fileBytes);
+    public String uploadFile(String localFilePath, String bucketName) throws IOException {
+        Path path = Path.of(localFilePath);
+        if (!Files.exists(path)) {
+            throw new IOException("El archivo no existe: " + localFilePath);
         }
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode >= 200 && responseCode < 300) {
-            System.out.println("Archivo subido correctamente a Supabase S3.");
-            return uploadUrl; // ← Aquí retornamos la URL del archivo
-        } else {
-            throw new IOException("Error al subir archivo: " + connection.getResponseMessage());
-        }
-    }
+        String key = path.getFileName().toString();
 
-    public void eliminarArchivoDeSupabase(String fileUrl) {
+        PutObjectRequest putRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType("application/octet-stream")
+                .build();
+
         try {
-            URL url = new URL(fileUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("DELETE");
-            connection.setRequestProperty("Authorization", "Bearer " + System.getenv("SUPABASE_SECRET_KEY"));
+            s3Client.putObject(putRequest, path);
+            System.out.println("Archivo subido correctamente: " + key);
+        } catch (S3Exception e) {
+            System.err.println("Error al subir archivo: " + e.awsErrorDetails().errorMessage());
+            throw e;
+        }
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode < 200 || responseCode >= 300) {
-                System.out.println("Error al eliminar archivo: " + fileUrl);
-            } else {
-                System.out.println("Archivo eliminado correctamente: " + fileUrl);
-            }
-        } catch (IOException e) {
-            System.out.println("Excepción al eliminar archivo: " + fileUrl);
+        return supabaseProperties.getUrl() + "/" + bucketName + "/" + key;
+    }
+
+    public void eliminarArchivoDeSupabase(String fileName, String bucketName) {
+        try {
+            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
+
+            s3Client.deleteObject(deleteRequest);
+            System.out.println("Archivo eliminado correctamente: " + fileName);
+        } catch (S3Exception e) {
+            System.err.println("Error al eliminar archivo: " + e.awsErrorDetails().errorMessage());
         }
     }
 
-    public byte[] downloadFile(String fileName) throws IOException {
-        String fileUrl = SUPABASE_URL + "/" + BUCKET_NAME + "/" + fileName;
+    public byte[] downloadFile(String fileName, String bucketName) throws IOException {
+        try {
+            GetObjectRequest getRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
 
-        URL url = new URL(fileUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_SECRET_KEY);
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode >= 200 && responseCode < 300) {
-            return connection.getInputStream().readAllBytes();
-        } else {
-            throw new IOException("Error al descargar archivo: " + connection.getResponseMessage());
+            return s3Client.getObject(getRequest).readAllBytes();
+        } catch (S3Exception e) {
+            System.err.println("Error al descargar archivo: " + e.awsErrorDetails().errorMessage());
+            throw e;
         }
     }
 
+    // Métodos de acceso a buckets específicos (opcional)
+    public String getBucketPropuestas() {
+        return supabaseProperties.getBucketPropuestas();
+    }
+
+    public String getBucketEvidencias() {
+        return supabaseProperties.getBucketEvidencias();
+    }
 }
+

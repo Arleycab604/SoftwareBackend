@@ -1,12 +1,14 @@
 package com.saberpro.backendsoftware.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Data
 @RequiredArgsConstructor
 public class InputQueryDTO {
     //Propiedades de paginacion

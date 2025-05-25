@@ -77,6 +77,10 @@ public class UsuarioController {
         String token = usuarioService.login(usuario.getNombreUsuario(), usuario.getPassword());
         Map<String, String> response = new HashMap<>();
         response.put("token", token != null ? token : "Credenciales inválidas.");
+        if(token != null){
+            System.out.println("Enviando correo de inicio de sesión a: " + usuario.getNombreUsuario());
+            correosService.notificarInicioSesion(usuario.getNombreUsuario());
+        }
         return response;
     }
     @GetMapping("/recoverPassword")
