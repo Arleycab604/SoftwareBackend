@@ -96,14 +96,14 @@ public class UsuarioService {
                 .orElse(false);
     }
     @Transactional
-    public List<UsuarioDTO> buscarUsuariosExcluyendoTipo(String tipoExcluido) {
+    public List<UsuarioDTO> buscarUsuariosExcluyendoTipo(TipoUsuario tipoExcluido) {
         return usuarioRepository.findByTipoDeUsuarioNot(tipoExcluido)
                 .stream()
                 .map(this::convertirAUsuarioDTO)
                 .collect(Collectors.toList());
     }
     @Transactional
-    public List<UsuarioDTO> buscarPorTipoUsuario(String tipoUsuario) {
+    public List<UsuarioDTO> buscarPorTipoUsuario(TipoUsuario tipoUsuario) {
         return usuarioRepository.findByTipoDeUsuario(tipoUsuario)
                 .stream()
                 .map(this::convertirAUsuarioDTO)
@@ -169,7 +169,7 @@ public class UsuarioService {
     public void actualizarRolesExpirados() {
         List<Usuario> expirados = usuarioRepository.findByFechaFinRolBefore(LocalDate.now());
         for (Usuario usuario : expirados) {
-            usuario.setTipoDeUsuario("DOCENTE");
+            usuario.setTipoDeUsuario(TipoUsuario.DOCENTE);
             usuario.setFechaFinRol(null); // opcional: limpiar para no volver a procesar
         }
         usuarioRepository.saveAll(expirados);

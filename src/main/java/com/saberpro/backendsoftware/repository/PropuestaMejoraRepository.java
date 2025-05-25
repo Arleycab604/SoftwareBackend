@@ -9,8 +9,8 @@ import java.util.List;
 
 @Repository
 public interface PropuestaMejoraRepository extends JpaRepository<PropuestaMejora, Long> {
-    List<PropuestaMejora> findByEstado(PropuestaMejoraState estado);
+    List<PropuestaMejora> findByEstadoPropuesta(PropuestaMejoraState estado);
     List<PropuestaMejora> findByModuloPropuestaIgnoreCase(String modulo);
-    List<PropuestaMejora> findByUsuarioProponente_Id(Long idUsuario);
+    List<PropuestaMejora> findByUsuarioProponente_nombreUsuario(String nombreUsuario);
 
 }

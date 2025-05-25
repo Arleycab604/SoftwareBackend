@@ -19,9 +19,6 @@ public class Programa {
     private String nombrePrograma;
     private String grupoDeReferencia;
 
-    @OneToMany(mappedBy = "programa")
-    @JsonManagedReference
-    private List<Estudiante> estudiantes = new ArrayList<>();
 
     public Programa(){
         sniesId = 0;
@@ -34,10 +31,7 @@ public class Programa {
         this.grupoDeReferencia = grupoDeReferencia;
     }
 
-    public void addEstudiante(Estudiante estudiante) {
-        this.estudiantes.add(estudiante);
-        estudiante.setPrograma(this);
-    }
+
     public String toString() {
         return "Programa{" +
                 "sniesId=" + sniesId +

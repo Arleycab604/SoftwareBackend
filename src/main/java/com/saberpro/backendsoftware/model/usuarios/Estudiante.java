@@ -1,7 +1,6 @@
 package com.saberpro.backendsoftware.model.usuarios;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.saberpro.backendsoftware.model.Programa;
+import com.saberpro.backendsoftware.model.Usuario;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,28 +11,26 @@ import lombok.Setter;
 public class Estudiante {
     @Id
     private Long documento;
-
     private String tipoDocumento;
-    private String nombreEstudiante;
+
+    @OneToOne
+    @JoinColumn(name = "nombre_estudiante", referencedColumnName = "nombreUsuario")
+    private Usuario usuario;
     private String tipoDeEvaluado;
     private String ciudad;
 
-    @ManyToOne
-    @JoinColumn(name = "snies_id", referencedColumnName = "sniesId")
-    @JsonBackReference
-    private Programa programa;
 
     public Estudiante() {
         documento = 0L;
         tipoDocumento = "";
-        nombreEstudiante = "";
+
         tipoDeEvaluado = "";
         ciudad = "";
     }
-    public Estudiante(Long documento, String tipoDocumento, String nombreEstudiante, String tipoDeEvaluado, String ciudad) {
+    public Estudiante(Long documento, String tipoDocumento, Usuario user, String tipoDeEvaluado, String ciudad) {
         this.documento = documento;
         this.tipoDocumento = tipoDocumento;
-        this.nombreEstudiante = nombreEstudiante;
+        this.usuario = user;
         this.tipoDeEvaluado = tipoDeEvaluado;
         this.ciudad = ciudad;
     }
@@ -41,7 +38,7 @@ public class Estudiante {
         return "Estudiante{" +
                 "documento=" + documento +
                 ", tipoDocumento='" + tipoDocumento + '\'' +
-                ", nombreEstudiante='" + nombreEstudiante + '\'' +
+                ", nombreEstudiante='" + usuario.getNombreUsuario() + '\'' +
                 ", tipoDeEvaluado='" + tipoDeEvaluado + '\'' +
                 ", ciudad='" + ciudad + '\'' +
                 '}';

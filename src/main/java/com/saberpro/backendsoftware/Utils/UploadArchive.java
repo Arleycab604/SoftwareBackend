@@ -52,4 +52,38 @@ public class UploadArchive {
         }
     }
 
+    public void eliminarArchivoDeSupabase(String fileUrl) {
+        try {
+            URL url = new URL(fileUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
+            connection.setRequestProperty("Authorization", "Bearer " + System.getenv("SUPABASE_SECRET_KEY"));
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode < 200 || responseCode >= 300) {
+                System.out.println("Error al eliminar archivo: " + fileUrl);
+            } else {
+                System.out.println("Archivo eliminado correctamente: " + fileUrl);
+            }
+        } catch (IOException e) {
+            System.out.println("Excepción al eliminar archivo: " + fileUrl);
+        }
+    }
+
+    public byte[] downloadFile(String fileName) throws IOException {
+        String fileUrl = SUPABASE_URL + "/" + BUCKET_NAME + "/" + fileName;
+
+        URL url = new URL(fileUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_SECRET_KEY);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode >= 200 && responseCode < 300) {
+            return connection.getInputStream().readAllBytes();
+        } else {
+            throw new IOException("Error al descargar archivo: " + connection.getResponseMessage());
+        }
+    }
+
 }

@@ -115,7 +115,7 @@ public class UsuarioController {
         }
     }
     @GetMapping("/findByRole")
-    public ResponseEntity<List<UsuarioDTO>> buscarUsuariosPorTipo(@RequestParam String tipoUsuario) {
+    public ResponseEntity<List<UsuarioDTO>> buscarUsuariosPorTipo(@RequestParam TipoUsuario tipoUsuario) {
         List<UsuarioDTO> usuarios = usuarioService.buscarPorTipoUsuario(tipoUsuario);
         return ResponseEntity.ok(usuarios);
     }

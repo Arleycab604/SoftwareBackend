@@ -1,8 +1,7 @@
 package com.saberpro.backendsoftware.controller;
 
 import com.saberpro.backendsoftware.enums.AccionHistorico;
-import com.saberpro.backendsoftware.service.CsvUploadService;
-import com.saberpro.backendsoftware.service.ExcelUploadService;
+import com.saberpro.backendsoftware.service.UploadService;
 import com.saberpro.backendsoftware.service.HistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,7 @@ import java.util.Objects;
 @RequestMapping("/SaberPro/upload")
 @CrossOrigin(origins = "*") //Cambiar al dominio del frontend
 public class UploadController {
-    private final CsvUploadService csvUploadService;
-    private final ExcelUploadService excelUploadService;
+    private final UploadService uploadService;
 
     @Autowired
     private final HistoryService historyService;
@@ -50,10 +48,10 @@ public class UploadController {
         try {
             //Posiblemente implementar xls para arhivos de antes de 2007
             if(Objects.requireNonNull(fileName).endsWith("xlsx")) {
-                message= excelUploadService.uploadExcel(file, year, periodo);
+                message= uploadService.uploadExcel(file, year, periodo);
             }
             else if(fileName.endsWith("csv")) {
-                message = csvUploadService.uploadCSV(file, year, periodo);
+                message = uploadService.uploadCSV(file, year, periodo);
             }else {
                 return ResponseEntity.badRequest().body("Formato de archivo no soportado. Solo se permiten archivos .csv o .xlsx");
             }

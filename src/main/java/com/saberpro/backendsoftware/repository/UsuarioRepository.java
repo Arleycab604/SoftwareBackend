@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.repository;
 
+import com.saberpro.backendsoftware.enums.TipoUsuario;
 import com.saberpro.backendsoftware.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 public interface UsuarioRepository extends JpaRepository<Usuario, String> {
    Optional<Usuario> findByNombreUsuario(String nombreUsuario);
     List<Usuario> findByFechaFinRolBefore(LocalDate fecha);
-    List<Usuario> findByTipoDeUsuario(String tipoDeUsuario);
-    List<Usuario> findByTipoDeUsuarioNot(String tipoDeUsuario);
+    List<Usuario> findByTipoDeUsuario(TipoUsuario tipoDeUsuario);
+    List<Usuario> findByTipoDeUsuarioNot(TipoUsuario tipoDeUsuario);
+
 }

@@ -18,14 +18,17 @@ public class Usuario {
     @Column(nullable = false)
     private String nombreUsuario;
 
+
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoUsuario tipoDeUsuario;
 
     private String correo;
     private LocalDate fechaFinRol;
+
     @ManyToOne
     @JoinColumn(name = "sniesId", referencedColumnName = "sniesId")
     private Programa programa;

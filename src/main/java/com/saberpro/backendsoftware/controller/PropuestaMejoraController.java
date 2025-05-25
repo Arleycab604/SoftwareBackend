@@ -1,5 +1,6 @@
 package com.saberpro.backendsoftware.controller;
 
+import com.saberpro.backendsoftware.Utils.UploadArchive;
 import com.saberpro.backendsoftware.dto.PropuestaMejoraDTO;
 import com.saberpro.backendsoftware.enums.PropuestaMejoraState;
 import com.saberpro.backendsoftware.model.PropuestaMejora;
@@ -7,7 +8,7 @@ import com.saberpro.backendsoftware.model.Usuario;
 import com.saberpro.backendsoftware.repository.UsuarioRepository;
 import com.saberpro.backendsoftware.service.PropuestaMejoraService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,9 +46,9 @@ public class PropuestaMejoraController {
         return ResponseEntity.ok(propuestaService.listarPorModulo(modulo));
     }
 
-    @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<?> listarPorUsuario(@PathVariable Long idUsuario) {
-        return ResponseEntity.ok(propuestaService.listarPorUsuario(idUsuario));
+    @GetMapping("/usuario/{nombreUsuario}")
+    public ResponseEntity<?> listarPorUsuario(@PathVariable String nombreUsuario) {
+        return ResponseEntity.ok(propuestaService.listarPorUsuario(nombreUsuario));
     }
 
     @PostMapping("/crear")
@@ -55,7 +56,7 @@ public class PropuestaMejoraController {
             @ModelAttribute PropuestaMejoraDTO request) throws IOException {
 
         // Buscar usuario proponente
-        Usuario usuario = usuarioRepo.findById(String.valueOf(request.getIdUsuarioProponente()))
+        Usuario usuario = usuarioRepo.findById(String.valueOf(request.getUsuarioProponente()))
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         List<String> rutasTemporales = new ArrayList<>();
@@ -79,12 +80,31 @@ public class PropuestaMejoraController {
 
         return ResponseEntity.ok(creada);
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<?> modificarPropuesta(@PathVariable Long id, @RequestBody PropuestaMejoraDTO dto) {
-        PropuestaMejora propuesta = propuestaService.modificarPropuesta(id, dto);
-        return ResponseEntity.ok(propuesta);
-    }
 
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PropuestaMejora> modificarPropuesta(
+            @PathVariable Long id,
+            @RequestPart("dto") PropuestaMejoraDTO dto) {
+
+        PropuestaMejora actualizada = propuestaService.modificarPropuesta(id, dto);
+        return ResponseEntity.ok(actualizada);
+    }
+    @GetMapping("/documento/download/{fileName}")
+    public ResponseEntity<byte[]> descargarDesdeSupabase(@PathVariable String fileName) {
+        try {
+            byte[] archivo = UploadArchive.getInstance().downloadFile(fileName);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDisposition(ContentDisposition.attachment().filename(fileName).build());
+
+            return new ResponseEntity<>(archivo, headers, HttpStatus.OK);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     @PostMapping("/{id}/aceptar")
     public ResponseEntity<?> aceptarPropuesta(@PathVariable Long id) {
         PropuestaMejora actualizada = propuestaService.cambiarEstado(id, PropuestaMejoraState.ACEPTADA);

@@ -1,5 +1,7 @@
 package com.saberpro.backendsoftware.model.usuarios;
 
+import com.saberpro.backendsoftware.enums.ModulosSaberPro;
+import com.saberpro.backendsoftware.enums.TipoUsuario;
 import com.saberpro.backendsoftware.model.Usuario;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,5 +18,7 @@ public class Docente {
     @JoinColumn(name ="nombreDocente" , referencedColumnName = "nombreUsuario")
     @OneToOne(cascade = CascadeType.ALL)
     private Usuario usuario;
-    private String moduloMaterias;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ModulosSaberPro moduloMaterias;
 }

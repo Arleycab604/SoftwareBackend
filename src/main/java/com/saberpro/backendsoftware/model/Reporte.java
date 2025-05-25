@@ -17,7 +17,10 @@ import java.util.List;
         },
         subgraphs = {
                 @NamedSubgraph(name = "estudianteSubgraph", attributeNodes = {
-                        @NamedAttributeNode("programa"),
+                        @NamedAttributeNode(value = "usuario", subgraph = "usuarioSubgraph")
+                }),
+                @NamedSubgraph(name = "usuarioSubgraph", attributeNodes = {
+                        @NamedAttributeNode("programa")
                 })
         }
 )
