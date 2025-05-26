@@ -98,7 +98,7 @@ public class QueryYearService {
                 }
             }
         }
-
+        System.out.println("Resultados obtenidos: " + resultados.size());
         return resultadoDTOs;
     }
 

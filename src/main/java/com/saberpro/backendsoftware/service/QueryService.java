@@ -74,6 +74,7 @@ public class QueryService {
                 resultados.add(dto);
             }
         }
+        System.out.println("Resultados obtenidos: " + resultados.size());
         return resultados;
     }
 

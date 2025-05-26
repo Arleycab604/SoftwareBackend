@@ -16,5 +16,6 @@ public class SupabaseProperties {
     private String secretKey;
     private String bucketPropuestas;
     private String bucketEvidencias;
+    private String bucketInformes;
     private String url;
 }

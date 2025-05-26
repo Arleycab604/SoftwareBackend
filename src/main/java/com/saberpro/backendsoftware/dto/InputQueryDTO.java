@@ -11,11 +11,6 @@ import lombok.Setter;
 @Data
 @RequiredArgsConstructor
 public class InputQueryDTO {
-    //Propiedades de paginacion
-    private int page = 0;
-    private int size = 20;
-
-    //Propiedades para filtrar
     @JsonProperty("year")
     private Integer year;
     @JsonProperty("periodo")
