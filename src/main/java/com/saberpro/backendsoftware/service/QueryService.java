@@ -25,7 +25,7 @@ public class QueryService {
 
     @Transactional
     public List<ReporteDTO> filtrarDatos(InputQueryDTO inputQueryDTO) {
-
+        System.out.println("InputQueryDTO: " + inputQueryDTO);
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Reporte> query = cb.createQuery(Reporte.class);
         Root<Reporte> reporte = query.from(Reporte.class);
@@ -57,6 +57,9 @@ public class QueryService {
                     continue;}}
             if (inputQueryDTO.getPuntajeGlobalMaximo() != null) {
                 if (reporteEntity.getPuntajeGlobal() > inputQueryDTO.getPuntajeGlobalMaximo()) {
+                    continue;}}
+            if(inputQueryDTO.getNombreUsuario() != null && !inputQueryDTO.getNombreUsuario().isEmpty()) {
+                if (!reporteEntity.getEstudiante().getUsuario().getNombreUsuario().equalsIgnoreCase(inputQueryDTO.getNombreUsuario())) {
                     continue;}}
             for (Modulo moduloEntity : reporteEntity.getModulos()) {
                 if (inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()) {
