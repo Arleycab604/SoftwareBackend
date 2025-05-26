@@ -64,18 +64,20 @@ public class PropuestaMejoraController {
     }
 
     //Enviar correo de creado a comite de programa
-    @PostMapping("/crear")
+    @PostMapping(value = "/crear", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crearPropuesta(
             @ModelAttribute PropuestaMejoraDTO request,
             @RequestHeader("Authorization") String authHeader) throws IOException {
-        System.out.println("procesando solicitud de creación de propuesta"+request);
+        System.out.println("procesando solicitud de creación de propuesta" + request);
         // Buscar usuario proponente
         Usuario usuario;
-        if (request.getUsuarioProponente() == null){
-            usuario = usuarioRepo.findByNombreUsuario("DECANO").orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        }else {
-        usuario = usuarioRepo.findByNombreUsuario(String.valueOf(request.getUsuarioProponente()))
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));}
+        if (request.getUsuarioProponente() == "null" || request.getUsuarioProponente() == null) {
+            usuario = usuarioRepo.findByNombreUsuario("DECANO")
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        } else {
+            usuario = usuarioRepo.findByNombreUsuario(String.valueOf(request.getUsuarioProponente()))
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        }
 
         List<String> rutasTemporales = new ArrayList<>();
         for (MultipartFile archivo : request.getArchivos()) {
@@ -96,7 +98,7 @@ public class PropuestaMejoraController {
 
         PropuestaMejora creada = propuestaService.crearPropuesta(propuesta, rutasTemporales);
 
-        if(creada != null){
+        if (creada != null) {
             System.out.println("Propuesta creada y enviando correo a comite de programa");
             correosService.notificarCreacionPropuesta(creada.getNombrePropuesta());
         }
@@ -133,21 +135,6 @@ public class PropuestaMejoraController {
 
             return new ResponseEntity<>(archivo, headers, HttpStatus.OK);
 
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    @GetMapping("/documento/download/url")
-    public ResponseEntity<byte[]> descargarPorUrl(@RequestParam String url) {
-        try {
-            byte[] archivo = uploadArchive.downloadFileByUrl(url);
-            String fileName = url.substring(url.lastIndexOf("/") + 1);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDisposition(ContentDisposition.attachment().filename(fileName).build());
-
-            return new ResponseEntity<>(archivo, headers, HttpStatus.OK);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
