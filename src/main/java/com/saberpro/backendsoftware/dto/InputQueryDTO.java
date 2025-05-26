@@ -23,7 +23,8 @@ public class InputQueryDTO {
 
     @JsonProperty("nombreUsuario") // nombre estudiante
     private String nombreUsuario;
-
+    @JsonProperty("documento")
+    private String documento;
     @JsonProperty("nombrePrograma") // Por ahora solo hay un programa :v
     private String nombrePrograma;
 

@@ -38,7 +38,9 @@ public class QueryService {
         if (inputQueryDTO.getPeriodo() != null && inputQueryDTO.getPeriodo() > 0) {
             predicates.add(cb.equal(periodo.get("periodo"), inputQueryDTO.getPeriodo()));}
         if (inputQueryDTO.getNombreUsuario() != null && !inputQueryDTO.getNombreUsuario().isEmpty()) {
-            predicates.add(cb.equal(estudiante.get("nombreEstudiante"), inputQueryDTO.getNombreUsuario()));}
+            predicates.add(cb.equal(estudiante.get("usuario").get("nombreUsuario"), inputQueryDTO.getNombreUsuario()));}
+        if (inputQueryDTO.getDocumento() != null && !inputQueryDTO.getDocumento().isEmpty()) {
+            predicates.add(cb.equal(estudiante.get("documento"), inputQueryDTO.getDocumento()));}
         if (inputQueryDTO.getNombrePrograma() != null && !inputQueryDTO.getNombrePrograma().isEmpty()) {
             predicates.add(cb.equal(estudiante.get("programa").get("nombrePrograma"), inputQueryDTO.getNombrePrograma()));}
         query.where(cb.and(predicates.toArray(new Predicate[0])));
