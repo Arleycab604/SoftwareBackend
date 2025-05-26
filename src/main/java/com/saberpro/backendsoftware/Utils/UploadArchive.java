@@ -10,7 +10,10 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -99,6 +102,23 @@ public class UploadArchive {
 
     public String getBucketEvidencias() {
         return supabaseProperties.getBucketEvidencias();
+    }
+
+    public byte[] downloadFileByUrl(String url) throws IOException {
+        URL downloadUrl = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection) downloadUrl.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(5000);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try (InputStream inputStream = connection.getInputStream()) {
+                return inputStream.readAllBytes();
+            }
+        } else {
+            throw new IOException("Error al descargar archivo: código HTTP " + responseCode);
+        }
     }
 }
 

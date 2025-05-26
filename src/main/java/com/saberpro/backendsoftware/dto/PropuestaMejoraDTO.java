@@ -21,4 +21,15 @@ public class PropuestaMejoraDTO {
 
     // Lista de URLs de archivos que el usuario desea mantener
     private List<String> urlsDocumentoDetalles;
+    public String toString(){
+        return "PropuestaMejoraDTO{" +
+                "nombrePropuesta='" + nombrePropuesta + '\'' +
+                ", moduloPropuesta=" + moduloPropuesta +
+                ", descripcion='" + descripcion + '\'' +
+                ", usuarioProponente='" + usuarioProponente + '\'' +
+                ", fechaCreacion='" + fechaCreacion + '\'' +
+                ", fechaLimiteEntrega='" + fechaLimiteEntrega + '\'' +
+                ", estadoPropuesta=" + estadoPropuesta +
+                '}';
+    }
 }

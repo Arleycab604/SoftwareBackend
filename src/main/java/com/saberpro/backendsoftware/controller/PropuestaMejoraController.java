@@ -68,10 +68,14 @@ public class PropuestaMejoraController {
     public ResponseEntity<?> crearPropuesta(
             @ModelAttribute PropuestaMejoraDTO request,
             @RequestHeader("Authorization") String authHeader) throws IOException {
-
+        System.out.println("procesando solicitud de creación de propuesta"+request);
         // Buscar usuario proponente
-        Usuario usuario = usuarioRepo.findByNombreUsuario(String.valueOf(request.getUsuarioProponente()))
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario;
+        if (request.getUsuarioProponente() == null){
+            usuario = usuarioRepo.findByNombreUsuario("DECANO").orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        }else {
+        usuario = usuarioRepo.findByNombreUsuario(String.valueOf(request.getUsuarioProponente()))
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));}
 
         List<String> rutasTemporales = new ArrayList<>();
         for (MultipartFile archivo : request.getArchivos()) {
@@ -133,7 +137,21 @@ public class PropuestaMejoraController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @GetMapping("/documento/download/url")
+    public ResponseEntity<byte[]> descargarPorUrl(@RequestParam String url) {
+        try {
+            byte[] archivo = uploadArchive.downloadFileByUrl(url);
+            String fileName = url.substring(url.lastIndexOf("/") + 1);
 
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDisposition(ContentDisposition.attachment().filename(fileName).build());
+
+            return new ResponseEntity<>(archivo, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
     @PostMapping("/{id}/aceptar")
     public ResponseEntity<?> aceptarPropuesta(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
