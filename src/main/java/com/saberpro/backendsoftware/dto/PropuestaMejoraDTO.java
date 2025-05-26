@@ -1,6 +1,7 @@
 package com.saberpro.backendsoftware.dto;
 
 import com.saberpro.backendsoftware.enums.ModulosSaberPro;
+import com.saberpro.backendsoftware.enums.PropuestaMejoraState;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,8 +13,9 @@ public class PropuestaMejoraDTO {
     private ModulosSaberPro moduloPropuesta;
     private String descripcion;
     private String usuarioProponente;
+    private String fechaCreacion;
     private String fechaLimiteEntrega;
-
+    private PropuestaMejoraState estadoPropuesta;
     // Nuevos archivos añadidos por el usuario
     private MultipartFile[] archivos;
 

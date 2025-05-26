@@ -29,63 +29,49 @@ public class QueryService {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Reporte> query = cb.createQuery(Reporte.class);
         Root<Reporte> reporte = query.from(Reporte.class);
-        Join<Reporte, Modulo> modulo = reporte.join("modulos", JoinType.LEFT);
         Join<Reporte, Estudiante> estudiante = reporte.join("estudiante", JoinType.LEFT);
         Join<Reporte, PeriodoEvaluacion> periodo = reporte.join("periodoEvaluacion", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
-
         if (inputQueryDTO.getYear() != null && inputQueryDTO.getYear() > 0) {
-            predicates.add(cb.equal(periodo.get("year"), inputQueryDTO.getYear()));
-        }
+            predicates.add(cb.equal(periodo.get("year"), inputQueryDTO.getYear()));}
         if (inputQueryDTO.getPeriodo() != null && inputQueryDTO.getPeriodo() > 0) {
-            predicates.add(cb.equal(periodo.get("periodo"), inputQueryDTO.getPeriodo()));
-        }
+            predicates.add(cb.equal(periodo.get("periodo"), inputQueryDTO.getPeriodo()));}
         if (inputQueryDTO.getNombreUsuario() != null && !inputQueryDTO.getNombreUsuario().isEmpty()) {
-            predicates.add(cb.equal(estudiante.get("nombreEstudiante"), inputQueryDTO.getNombreUsuario()));
-        }
+            predicates.add(cb.equal(estudiante.get("nombreEstudiante"), inputQueryDTO.getNombreUsuario()));}
         if (inputQueryDTO.getNombrePrograma() != null && !inputQueryDTO.getNombrePrograma().isEmpty()) {
-            predicates.add(cb.equal(estudiante.get("programa").get("nombrePrograma"), inputQueryDTO.getNombrePrograma()));
-        }
-        if (inputQueryDTO.getPuntajeGlobalMinimo() != null && inputQueryDTO.getPuntajeGlobalMinimo() > 0) {
-            predicates.add(cb.greaterThanOrEqualTo(reporte.get("puntajeGlobal"), inputQueryDTO.getPuntajeGlobalMinimo()));
-        }
-        if (inputQueryDTO.getPuntajeGlobalMaximo() != null && inputQueryDTO.getPuntajeGlobalMaximo() > 0) {
-            predicates.add(cb.lessThanOrEqualTo(reporte.get("puntajeGlobal"), inputQueryDTO.getPuntajeGlobalMaximo()));
-        }
-        if (inputQueryDTO.getNivelDesempeno() != null && !inputQueryDTO.getNivelDesempeno().isEmpty()) {
-            predicates.add(cb.equal(modulo.get("nivelDesempeno"), inputQueryDTO.getNivelDesempeno()));
-        }
-        if (inputQueryDTO.getPuntajeModuloMinimo() != null && inputQueryDTO.getPuntajeModuloMinimo() > 0) {
-            predicates.add(cb.greaterThanOrEqualTo(modulo.get("puntajeModulo"), inputQueryDTO.getPuntajeModuloMinimo()));
-        }
-        if (inputQueryDTO.getPuntajeModuloMaximo() != null && inputQueryDTO.getPuntajeModuloMaximo() > 0) {
-            predicates.add(cb.lessThanOrEqualTo(modulo.get("puntajeModulo"), inputQueryDTO.getPuntajeModuloMaximo()));
-        }
-
+            predicates.add(cb.equal(estudiante.get("programa").get("nombrePrograma"), inputQueryDTO.getNombrePrograma()));}
         query.where(cb.and(predicates.toArray(new Predicate[0])));
         query.distinct(true);
-
         TypedQuery<Reporte> typedQuery = entityManager.createQuery(query);
         EntityGraph<?> entityGraph = entityManager.getEntityGraph("Reporte.conRelaciones");
         typedQuery.setHint("jakarta.persistence.fetchgraph", entityGraph);
-
         List<Reporte> reportes = typedQuery.getResultList();
 
         List<ReporteDTO> resultados = new ArrayList<>();
         for (Reporte reporteEntity : reportes) {
+            if (inputQueryDTO.getPuntajeGlobalMinimo() != null) {
+                if (reporteEntity.getPuntajeGlobal() < inputQueryDTO.getPuntajeGlobalMinimo()) {
+                    continue;}}
+            if (inputQueryDTO.getPuntajeGlobalMaximo() != null) {
+                if (reporteEntity.getPuntajeGlobal() > inputQueryDTO.getPuntajeGlobalMaximo()) {
+                    continue;}}
             for (Modulo moduloEntity : reporteEntity.getModulos()) {
-                // Si se especifica un tipo de módulo, solo agregar si coincide
                 if (inputQueryDTO.getTipoModulo() != null && !inputQueryDTO.getTipoModulo().isEmpty()) {
-                    if (!moduloEntity.getTipo().equals(inputQueryDTO.getTipoModulo())) {
-                        continue;
-                    }
-                }
+                    if (!moduloEntity.getTipo().equalsIgnoreCase(inputQueryDTO.getTipoModulo())) {continue;}}
+
+                if (inputQueryDTO.getNivelDesempeno() != null && !inputQueryDTO.getNivelDesempeno().isEmpty()) {
+                    if (!moduloEntity.getNivelDesempeno().equalsIgnoreCase(inputQueryDTO.getNivelDesempeno())) {continue;}}
+
+                if (inputQueryDTO.getPuntajeModuloMinimo() != null) {
+                    if (moduloEntity.getPuntajeModulo() < inputQueryDTO.getPuntajeModuloMinimo()) {continue;}}
+                if (inputQueryDTO.getPuntajeModuloMaximo() != null) {
+                    if (moduloEntity.getPuntajeModulo() > inputQueryDTO.getPuntajeModuloMaximo()) {continue;}}
+
                 ReporteDTO dto = convertToReporteDTO(reporteEntity, moduloEntity);
                 resultados.add(dto);
             }
         }
-
         return resultados;
     }
 

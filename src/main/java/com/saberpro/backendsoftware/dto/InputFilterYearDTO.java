@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class InputFilterYearDTO {
-    private int year;
-    private int periodo;
+    private Integer year;
+    private Integer periodo;
     private Double mediaPeriodoMin;
     private Double mediaPeriodoMax;
     private Double coefVarPeriodoMin;
@@ -15,4 +15,20 @@ public class InputFilterYearDTO {
     private Double coefVarModuloMin;
     private Double coefVarModuloMax;
     private String tipoModulo; // Comas separadas
+
+    public String toString(){
+        return "InputFilterYearDTO{" +
+                "year=" + year +
+                ", periodo=" + periodo +
+                ", mediaPeriodoMin=" + mediaPeriodoMin +
+                ", mediaPeriodoMax=" + mediaPeriodoMax +
+                ", coefVarPeriodoMin=" + coefVarPeriodoMin +
+                ", coefVarPeriodoMax=" + coefVarPeriodoMax +
+                ", mediaModuloMin=" + mediaModuloMin +
+                ", mediaModuloMax=" + mediaModuloMax +
+                ", coefVarModuloMin=" + coefVarModuloMin +
+                ", coefVarModuloMax=" + coefVarModuloMax +
+                ", tipoModulo='" + tipoModulo + '\'' +
+                '}';
+    }
 }

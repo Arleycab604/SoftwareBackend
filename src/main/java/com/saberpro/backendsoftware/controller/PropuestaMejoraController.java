@@ -38,23 +38,29 @@ public class PropuestaMejoraController {
         return ResponseEntity.ok(propuesta);
     }
     @GetMapping
-    public ResponseEntity<?> listarTodas() {
-        return ResponseEntity.ok(propuestaService.listarTodas());
+    public ResponseEntity<List<PropuestaMejoraDTO>> listarTodas() {
+        return ResponseEntity.ok(propuestaService.listarTodas().stream()
+                .filter(p -> p.getIdPropuestaMejora() != 0 && p.getFechaCreacion() != null)
+                .map(propuestaService::toDTO)
+                .toList());
     }
 
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<?> listarPorEstado(@PathVariable PropuestaMejoraState estado) {
-        return ResponseEntity.ok(propuestaService.listarPorEstado(estado));
+    public ResponseEntity<List<PropuestaMejoraDTO>> listarPorEstado(@PathVariable PropuestaMejoraState estado) {
+        return ResponseEntity.ok(propuestaService.listarPorEstado(estado).stream()
+                .map(propuestaService::toDTO).toList());
     }
 
     @GetMapping("/modulo/{modulo}")
-    public ResponseEntity<?> listarPorModulo(@PathVariable ModulosSaberPro modulo) {
-        return ResponseEntity.ok(propuestaService.listarPorModulo(modulo));
+    public ResponseEntity<List<PropuestaMejoraDTO>> listarPorModulo(@PathVariable ModulosSaberPro modulo) {
+        return ResponseEntity.ok(propuestaService.listarPorModulo(modulo).stream()
+                .map(propuestaService::toDTO).toList());
     }
 
     @GetMapping("/usuario/{nombreUsuario}")
-    public ResponseEntity<?> listarPorUsuario(@PathVariable String nombreUsuario) {
-        return ResponseEntity.ok(propuestaService.listarPorUsuario(nombreUsuario));
+    public ResponseEntity<List<PropuestaMejoraDTO>> listarPorUsuario(@PathVariable String nombreUsuario) {
+        return ResponseEntity.ok(propuestaService.listarPorUsuario(nombreUsuario).stream()
+                .map(propuestaService::toDTO).toList());
     }
 
     //Enviar correo de creado a comite de programa

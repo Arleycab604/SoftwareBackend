@@ -3,7 +3,9 @@ package com.saberpro.backendsoftware;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
+@EnableAsync
 @SpringBootApplication(scanBasePackages = "com.saberpro.backendsoftware")  // Esto incluye @ComponentScan y @EnableJpaRepositories si estás en el paquete raíz
 public class BackendSoftwareApplication {
 

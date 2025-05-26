@@ -2,9 +2,11 @@ package com.saberpro.backendsoftware.service;
 
 import com.saberpro.backendsoftware.dto.InputFilterYearDTO;
 import com.saberpro.backendsoftware.dto.ReporteYearDTO;
-import com.saberpro.backendsoftware.model.ModuloYear;
+import com.saberpro.backendsoftware.model.*;
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,76 +25,84 @@ public class QueryYearService {
 
     @Transactional
     public List<ReporteYearDTO> filterByYear(InputFilterYearDTO filter) {
+        System.out.println("Filter: " + filter);
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ModuloYear> query = cb.createQuery(ModuloYear.class);
-        Root<ModuloYear> moduloYear = query.from(ModuloYear.class);
-        Join<Object, Object> reporteYear = moduloYear.join("reporteYear", JoinType.LEFT);
+        CriteriaQuery<ReporteYear> query = cb.createQuery(ReporteYear.class);
+        Root<ReporteYear> reporteYear = query.from(ReporteYear.class);
+        // Mantener LEFT JOIN para traer todos los ReporteYear aunque no tengan modulos
+        reporteYear.fetch("modulosYear", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
-
-        if (filter.getMediaPeriodoMin() != null && filter.getMediaPeriodoMax() != null) {
-            predicates.add(cb.between(reporteYear.get("mediaPeriodo"), filter.getMediaPeriodoMin(), filter.getMediaPeriodoMax()));
-        } else {
-            if (filter.getMediaPeriodoMin() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(reporteYear.get("mediaPeriodo"), filter.getMediaPeriodoMin()));
-            }
-            if (filter.getMediaPeriodoMax() != null) {
-                predicates.add(cb.lessThanOrEqualTo(reporteYear.get("mediaPeriodo"), filter.getMediaPeriodoMax()));
-            }
+        if (filter.getPeriodo() != null) {
+            predicates.add(cb.equal(reporteYear.get("periodoEvaluacion").get("periodo"), filter.getPeriodo()));
         }
-
-        if (filter.getMediaModuloMin() != null && filter.getMediaModuloMax() != null) {
-            predicates.add(cb.between(moduloYear.get("mediaModulo"), filter.getMediaModuloMin(), filter.getMediaModuloMax()));
-        } else {
-            if (filter.getMediaModuloMin() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(moduloYear.get("mediaModulo"), filter.getMediaModuloMin()));
-            }
-            if (filter.getMediaModuloMax() != null) {
-                predicates.add(cb.lessThanOrEqualTo(moduloYear.get("mediaModulo"), filter.getMediaModuloMax()));
-            }
+        if (filter.getYear() != null) {
+            predicates.add(cb.equal(reporteYear.get("periodoEvaluacion").get("year"), filter.getYear()));
         }
-
-        if (filter.getCoefVarPeriodoMin() != null && filter.getCoefVarPeriodoMax() != null) {
-            predicates.add(cb.between(reporteYear.get("coefVarPeriodo"), filter.getCoefVarPeriodoMin(), filter.getCoefVarPeriodoMax()));
-        } else {
-            if (filter.getCoefVarPeriodoMin() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(reporteYear.get("coefVarPeriodo"), filter.getCoefVarPeriodoMin()));
-            }
-            if (filter.getCoefVarPeriodoMax() != null) {
-                predicates.add(cb.lessThanOrEqualTo(reporteYear.get("coefVarPeriodo"), filter.getCoefVarPeriodoMax()));
-            }
+        if (filter.getMediaPeriodoMin() != null && filter.getMediaPeriodoMin() > 0) {
+            predicates.add(cb.greaterThanOrEqualTo(reporteYear.get("mediaPeriodo"), filter.getMediaPeriodoMin()));
         }
-
-        if (filter.getCoefVarModuloMin() != null && filter.getCoefVarModuloMax() != null) {
-            predicates.add(cb.between(moduloYear.get("coefVarModulo"), filter.getCoefVarModuloMin(), filter.getCoefVarModuloMax()));
-        } else {
-            if (filter.getCoefVarModuloMin() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(moduloYear.get("coefVarModulo"), filter.getCoefVarModuloMin()));
-            }
-            if (filter.getCoefVarModuloMax() != null) {
-                predicates.add(cb.lessThanOrEqualTo(moduloYear.get("coefVarModulo"), filter.getCoefVarModuloMax()));
-            }
+        if (filter.getMediaPeriodoMax() != null && filter.getMediaPeriodoMax() > 0) {
+            predicates.add(cb.lessThanOrEqualTo(reporteYear.get("mediaPeriodo"), filter.getMediaPeriodoMax()));
         }
+        if (filter.getCoefVarPeriodoMin() != null && filter.getCoefVarPeriodoMin() > 0) {
+            predicates.add(cb.greaterThanOrEqualTo(reporteYear.get("coeficienteVariacion"), filter.getCoefVarPeriodoMin()));
+        }
+        if (filter.getCoefVarPeriodoMax() != null && filter.getCoefVarPeriodoMax() > 0) {
+            predicates.add(cb.lessThanOrEqualTo(reporteYear.get("coeficienteVariacion"), filter.getCoefVarPeriodoMax()));
+        }
+        // NO agregar filtros sobre moduloYear aquí
 
         query.where(cb.and(predicates.toArray(new Predicate[0])));
-        List<ModuloYear> resultados = entityManager.createQuery(query).getResultList();
 
-        // Mapeo de ModuloYear a ReporteYearDTO
+        TypedQuery<ReporteYear> typedQuery = entityManager.createQuery(query);
+
+        EntityGraph<?> entityGraph = entityManager.getEntityGraph("ReporteYear.conRelaciones");
+        typedQuery.setHint("jakarta.persistence.fetchgraph", entityGraph);
+
+        List<ReporteYear> resultados = typedQuery.getResultList();
+
         List<ReporteYearDTO> resultadoDTOs = new ArrayList<>();
-        for (ModuloYear my : resultados) {
-            ReporteYearDTO dto = new ReporteYearDTO();
-            dto.setYear(my.getReporteYear().getPeriodoEvaluacion().getYear());
-            dto.setPeriodo(my.getReporteYear().getPeriodoEvaluacion().getPeriodo());
-            dto.setMediaPeriodo(my.getReporteYear().getMediaPeriodo());
-            dto.setVarianzaPeriodo(my.getReporteYear().getVarianzaPeriodo());
-            dto.setCoefVarPeriodo(my.getReporteYear().getCoeficienteVariacion());
-            dto.setTipoModulo(my.getTipoModulo());
-            dto.setMediaModulo(my.getMediaModuloYear());
-            dto.setVarianzaModulo(my.getVarianzaModuloYear());
-            dto.setCoefVarModulo(my.getCoeficienteVariacionModuloYear());
-            resultadoDTOs.add(dto);
+        for (ReporteYear ry : resultados) {
+            for (ModuloYear my : ry.getModulosYear()) {
+                // Filtro en Java, solo si cumple:
+                boolean cumpleFiltro = true;
+                if (filter.getMediaModuloMin() != null && filter.getMediaModuloMin() > 0) {
+                    cumpleFiltro &=  my.getMediaModuloYear() >= filter.getMediaModuloMin();
+                }
+                if (filter.getMediaModuloMax() != null && filter.getMediaModuloMax() > 0) {
+                    cumpleFiltro &= my.getMediaModuloYear() <= filter.getMediaModuloMax();
+                }
+                if (filter.getCoefVarModuloMin() != null && filter.getCoefVarModuloMin() > 0) {
+                    cumpleFiltro &=  my.getCoeficienteVariacionModuloYear() >= filter.getCoefVarModuloMin();
+                }
+                if (filter.getCoefVarModuloMax() != null && filter.getCoefVarModuloMax() > 0) {
+                    cumpleFiltro &= my.getCoeficienteVariacionModuloYear() <= filter.getCoefVarModuloMax();
+                }
+                if (filter.getTipoModulo() != null && !filter.getTipoModulo().equalsIgnoreCase("null")) {
+                    cumpleFiltro &= my.getTipoModulo() != null && my.getTipoModulo().equalsIgnoreCase(filter.getTipoModulo());
+                }
+
+                if (cumpleFiltro) {
+                    ReporteYearDTO dto = new ReporteYearDTO();
+                    dto.setYear(ry.getPeriodoEvaluacion().getYear());
+                    dto.setPeriodo(ry.getPeriodoEvaluacion().getPeriodo());
+                    dto.setMediaPeriodo(ry.getMediaPeriodo());
+                    dto.setVarianzaPeriodo(ry.getVarianzaPeriodo());
+                    dto.setCoefVarPeriodo(ry.getCoeficienteVariacion());
+                    dto.setTipoModulo(my.getTipoModulo());
+                    dto.setMediaModulo(my.getMediaModuloYear());
+                    dto.setVarianzaModulo(my.getVarianzaModuloYear());
+                    dto.setCoefVarModulo(my.getCoeficienteVariacionModuloYear());
+                    resultadoDTOs.add(dto);
+                }
+            }
         }
 
         return resultadoDTOs;
     }
+
+
+
+
 }

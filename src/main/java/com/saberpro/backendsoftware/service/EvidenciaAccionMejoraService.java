@@ -115,6 +115,10 @@ public class EvidenciaAccionMejoraService {
 
     private EvidenciaAccionDeMejoraDTO toDTO(EvidenciaAccionDeMejora evidencia) {
         EvidenciaAccionDeMejoraDTO dto = new EvidenciaAccionDeMejoraDTO();
+        if (evidencia != null) {
+            dto.setIdPropuestaMejora(evidencia.getId());
+        }
+
         dto.setNombreDocente(evidencia.getDocente().getUsuario().getNombreUsuario());
         dto.setIdPropuestaMejora(evidencia.getPropuestaMejora().getIdPropuestaMejora());
         dto.setFechaEntrega(evidencia.getFechaEntrega().toString());

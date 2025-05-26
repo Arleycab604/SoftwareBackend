@@ -17,7 +17,8 @@ public class QueryYearController {
     private final QueryYearService queryYearService;
 
     @PostMapping("/Query")
-    public ResponseEntity<List<ReporteYearDTO>> filterByYear(@RequestBody InputFilterYearDTO filter) {
+    public ResponseEntity<List<ReporteYearDTO>> filterByYear(@RequestBody InputFilterYearDTO filter,
+                                                             @RequestHeader ("Authorization") String authHeader) {
         List<ReporteYearDTO> results = queryYearService.filterByYear(filter);
         return ResponseEntity.ok(results);
     }

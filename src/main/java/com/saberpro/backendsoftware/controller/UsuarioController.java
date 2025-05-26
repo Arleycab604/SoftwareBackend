@@ -2,8 +2,12 @@ package com.saberpro.backendsoftware.controller;
 
 import com.saberpro.backendsoftware.dto.UsuarioDTO;
 import com.saberpro.backendsoftware.enums.AccionHistorico;
+import com.saberpro.backendsoftware.enums.ModulosSaberPro;
 import com.saberpro.backendsoftware.enums.TipoUsuario;
 import com.saberpro.backendsoftware.model.Usuario;
+import com.saberpro.backendsoftware.model.usuarios.Docente;
+import com.saberpro.backendsoftware.repository.DocenteRepository;
+import com.saberpro.backendsoftware.repository.UsuarioRepository;
 import com.saberpro.backendsoftware.service.HistoryService;
 import com.saberpro.backendsoftware.service.UsuarioService;
 import com.saberpro.backendsoftware.Utils.CorreosService;
@@ -25,6 +29,7 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final HistoryService historyService;
     private final CorreosService correosService;
+    private final DocenteRepository docenteRepository;
 
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> getAllUsers() {
@@ -32,6 +37,17 @@ public class UsuarioController {
         List<UsuarioDTO> usuarios = usuarioService.findAllUsuarios();
         return ResponseEntity.ok(usuarios);
     }
+
+    @GetMapping("/{nombreUsuario}/modulo")
+    public ResponseEntity<ModulosSaberPro> getModuloUsuario(
+            @RequestParam String nombreUsuario) {
+        return docenteRepository.findByUsuario_NombreUsuario(nombreUsuario)
+                .map(Docente::getModuloMaterias)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ModulosSaberPro.NONE));
+    }
+
 
     //Crear usuario
     @PostMapping("/register")

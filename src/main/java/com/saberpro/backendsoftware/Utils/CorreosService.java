@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
+import org.springframework.scheduling.annotation.Async;
 @Service
 @RequiredArgsConstructor
 public class CorreosService {
@@ -25,7 +25,7 @@ public class CorreosService {
     private final DocenteRepository docenteRepository;
     @Autowired
     private JavaMailSender mailSender;
-
+    @Async
     public String enviarCorreoRecuperacion(String nombreUsuario) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
         if (usuarioOpt.isEmpty()) return "";
@@ -52,7 +52,7 @@ public class CorreosService {
 
         return codigo;
     }
-
+    @Async
     public void notificarInicioSesion(String nombreUsuario) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
         if (usuarioOpt.isEmpty()) return;
@@ -76,7 +76,7 @@ public class CorreosService {
 
         enviarCorreo(asunto, cuerpo, List.of(correoDestino));
     }
-
+    @Async
     public void notificarAsignacionAccionMejora(PropuestaMejora propuesta) {
         List<String> correosDocentes = docenteRepository.findByModuloMaterias(propuesta.getModuloPropuesta())
                 .stream()
@@ -101,7 +101,7 @@ public class CorreosService {
 
         enviarCorreo(asunto, cuerpo, correosDocentes);
     }
-
+    @Async
     public void notificarCreacionPropuesta(String nombrePropuesta) {
         List<String> correosComite = usuarioRepository.findByTipoDeUsuario(TipoUsuario.COMITE_DE_PROGRAMA)
                 .stream()
@@ -122,7 +122,7 @@ public class CorreosService {
 
         enviarCorreo(asunto, cuerpo, correosComite);
     }
-
+    @Async
     public void notificarModificacionPropuesta(String nombrePropuesta) {
         List<String> correosComite = usuarioRepository.findByTipoDeUsuario(TipoUsuario.COMITE_DE_PROGRAMA)
                 .stream()
@@ -144,7 +144,7 @@ public class CorreosService {
         enviarCorreo(asunto, cuerpo, correosComite);
     }
 
-
+    @Async
     public void enviarCorreo(String asunto, String cuerpo, List<String> destinatarios) {
         try {
             MimeMessage mensaje = mailSender.createMimeMessage();

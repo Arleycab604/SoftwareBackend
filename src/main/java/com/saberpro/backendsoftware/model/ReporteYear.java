@@ -6,20 +6,29 @@ import lombok.Setter;
 
 import java.util.List;
 
+@NamedEntityGraph(
+        name = "ReporteYear.conRelaciones",
+        attributeNodes = {
+                @NamedAttributeNode("periodoEvaluacion"),
+                @NamedAttributeNode("modulosYear")
+        }
+)
+@Entity
 @Getter
 @Setter
-@Entity
 public class ReporteYear {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idReporteYear;
+
     @OneToOne
     private PeriodoEvaluacion periodoEvaluacion;
+
     private double mediaPeriodo;
     private double varianzaPeriodo;
     private double coeficienteVariacion;
 
-    @OneToMany(mappedBy = "idModuloYear")
+    @OneToMany(mappedBy = "reporteYear")
     private List<ModuloYear> modulosYear;
 
     public ReporteYear() {

@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -178,5 +179,34 @@ public class PropuestaMejoraService {
 
         propuesta.setEstadoPropuesta(nuevoEstado);
         return propuestaRepo.save(propuesta);
+    }
+
+    public PropuestaMejoraDTO toDTO(PropuestaMejora propuesta) {
+        if (propuesta == null || propuesta.getIdPropuestaMejora() == 0 || propuesta.getFechaCreacion() == null) {
+            return null; // o lanzar una excepción si prefieres manejarlo con error
+        }
+
+        PropuestaMejoraDTO dto = new PropuestaMejoraDTO();
+
+        dto.setNombrePropuesta(propuesta.getNombrePropuesta());
+        dto.setModuloPropuesta(propuesta.getModuloPropuesta());
+        dto.setDescripcion(propuesta.getDescripcion());
+
+        if (propuesta.getUsuarioProponente() != null) {
+            dto.setUsuarioProponente(propuesta.getUsuarioProponente().getNombreUsuario()); // o el campo correspondiente
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        dto.setFechaCreacion(propuesta.getFechaCreacion().format(formatter));
+
+        if (propuesta.getFechaLimiteEntrega() != null) {
+            dto.setFechaLimiteEntrega(propuesta.getFechaLimiteEntrega().format(formatter));
+        }
+
+        dto.setUrlsDocumentoDetalles(propuesta.getUrlsDocumentoDetalles());
+
+        // dto.setArchivos(null); // No se asignan archivos ya cargados (solo usados en POST/PUT desde el frontend)
+
+        return dto;
     }
 }
