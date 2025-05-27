@@ -194,9 +194,7 @@ public class PropuestaMejoraService {
         dto.setEstadoPropuesta(propuesta.getEstadoPropuesta());
         dto.setDescripcion(propuesta.getDescripcion());
 
-        for(String url : propuesta.getUrlsDocumentoDetalles()) {
 
-        }
 
         if (propuesta.getUsuarioProponente() != null) {
             dto.setUsuarioProponente(propuesta.getUsuarioProponente().getNombreUsuario()); // o el campo correspondiente
